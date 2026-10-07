@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://7rie0yf7cckb"]
+
+[ext_resource type="PackedScene" uid="uid://cydbwgcvvw03m" path="res://Models/KenneyRacingKit/lightRed.glb" id="1_320im"]
+
+[node name="lightRed" unique_id=2009511958 instance=ExtResource("1_320im")]
+
+[node name="lightRed(Clone)" parent="." index="0" unique_id=1503554312]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

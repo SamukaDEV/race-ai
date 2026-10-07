@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dl2kli2xf387h"]
+
+[ext_resource type="PackedScene" uid="uid://6awslrptke8v" path="res://Models/KenneyRacingKit/lightColored.glb" id="1_tftsx"]
+
+[node name="lightColored" unique_id=19325629 instance=ExtResource("1_tftsx")]
+
+[node name="lightColored(Clone)" parent="." index="0" unique_id=1177002318]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

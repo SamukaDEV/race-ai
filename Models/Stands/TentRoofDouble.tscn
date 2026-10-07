@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://du4aqntfyqftp"]
+
+[ext_resource type="PackedScene" uid="uid://c6x7hitp5nu0p" path="res://Models/KenneyRacingKit/tentRoofDouble.glb" id="1_84ru1"]
+
+[node name="tentRoofDouble" unique_id=1223152770 instance=ExtResource("1_84ru1")]
+
+[node name="tentRoofDouble(Clone)" parent="." index="0" unique_id=667259622]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

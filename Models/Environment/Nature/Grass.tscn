@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cbi8s3hreexvg"]
+
+[ext_resource type="PackedScene" uid="uid://cbyv77edy7upe" path="res://Models/KenneyRacingKit/grass.glb" id="1_y867u"]
+
+[node name="grass" unique_id=4923189 instance=ExtResource("1_y867u")]
+
+[node name="grass(Clone)" parent="." index="0" unique_id=1140603354]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

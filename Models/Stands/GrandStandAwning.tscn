@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cfxwqg2pheeqj"]
+
+[ext_resource type="PackedScene" uid="uid://tqimkgavuiei" path="res://Models/KenneyRacingKit/grandStandAwning.glb" id="1_sp3ge"]
+
+[node name="grandStandAwning" unique_id=241683575 instance=ExtResource("1_sp3ge")]
+
+[node name="grandStandAwning(Clone)" parent="." index="0" unique_id=994817980]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

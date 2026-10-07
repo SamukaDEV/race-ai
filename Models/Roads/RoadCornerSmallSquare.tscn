@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bw7qycou3830a"]
+
+[ext_resource type="PackedScene" uid="uid://umidy181okje" path="res://Models/KenneyRacingKit/roadCornerSmallSquare.glb" id="1_rtpni"]
+
+[node name="roadCornerSmallSquare" unique_id=462348429 instance=ExtResource("1_rtpni")]
+
+[node name="roadCornerSmallSquare(Clone)" parent="." index="0" unique_id=1217333108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

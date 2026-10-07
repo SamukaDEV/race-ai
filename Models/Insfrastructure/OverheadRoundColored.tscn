@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://d0661vr4pgpv4"]
+
+[ext_resource type="PackedScene" uid="uid://bw6hgkkkn7w32" path="res://Models/KenneyRacingKit/overheadRoundColored.glb" id="1_edyr4"]
+
+[node name="overheadRoundColored" unique_id=1177615161 instance=ExtResource("1_edyr4")]
+
+[node name="overheadRoundColored(Clone)" parent="." index="0" unique_id=1776730959]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

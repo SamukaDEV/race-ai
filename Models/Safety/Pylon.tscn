@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://3fkwww56vwni"]
+
+[ext_resource type="PackedScene" uid="uid://b4gl4y08ofp2n" path="res://Models/KenneyRacingKit/pylon.glb" id="1_xfj2k"]
+
+[node name="pylon" unique_id=205729954 instance=ExtResource("1_xfj2k")]
+
+[node name="pylon(Clone)" parent="." index="0" unique_id=1680117419]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

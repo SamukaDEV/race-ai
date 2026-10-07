@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://d3fqg2m4dppyx"]
+
+[ext_resource type="PackedScene" uid="uid://c1ri0677bhw16" path="res://Models/KenneyRacingKit/roadRampLong.glb" id="1_fp1qm"]
+
+[node name="roadRampLong" unique_id=418842407 instance=ExtResource("1_fp1qm")]
+
+[node name="roadRampLong(Clone)" parent="." index="0" unique_id=1006844190]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

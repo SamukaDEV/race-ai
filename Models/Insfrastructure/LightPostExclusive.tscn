@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dtqy7kcdisi5"]
+
+[ext_resource type="PackedScene" uid="uid://brferceqkuycn" path="res://Models/KenneyRacingKit/lightPost_exclusive.glb" id="1_ul7ab"]
+
+[node name="lightPost_exclusive" unique_id=2130944977 instance=ExtResource("1_ul7ab")]
+
+[node name="lightPost_exclusive(Clone)" parent="." index="0" unique_id=1107292945]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

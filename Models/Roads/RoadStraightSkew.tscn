@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://d4ddd1t0rjpi1"]
+
+[ext_resource type="PackedScene" uid="uid://cxbdgwsexuiq0" path="res://Models/KenneyRacingKit/roadStraightSkew.glb" id="1_jaxnn"]
+
+[node name="roadStraightSkew" unique_id=983037682 instance=ExtResource("1_jaxnn")]
+
+[node name="roadStraightSkew(Clone)" parent="." index="0" unique_id=384496253]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://c0b22g7ksdjed"]
+
+[ext_resource type="PackedScene" uid="uid://cmdw1ik3ilqck" path="res://Models/KenneyRacingKit/treeSmall.glb" id="1_doh18"]
+
+[node name="treeSmall" unique_id=274459126 instance=ExtResource("1_doh18")]
+
+[node name="treeSmall(Clone)" parent="." index="0" unique_id=1651663929]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

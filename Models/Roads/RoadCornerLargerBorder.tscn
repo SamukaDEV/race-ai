@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b1ruwohn12kuh"]
+
+[ext_resource type="PackedScene" uid="uid://c0tjf6xgteyb2" path="res://Models/KenneyRacingKit/roadCornerLargerBorder.glb" id="1_i6182"]
+
+[node name="roadCornerLargerBorder" unique_id=919558138 instance=ExtResource("1_i6182")]
+
+[node name="roadCornerLargerBorder(Clone)" parent="." index="0" unique_id=478153838]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

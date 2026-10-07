@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dxq47yexih6a4"]
+
+[ext_resource type="PackedScene" uid="uid://brfho1xhme62v" path="res://Models/KenneyRacingKit/lightPostModern.glb" id="1_5fw12"]
+
+[node name="lightPostModern" unique_id=579624406 instance=ExtResource("1_5fw12")]
+
+[node name="lightPostModern(Clone)" parent="." index="0" unique_id=1572563044]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

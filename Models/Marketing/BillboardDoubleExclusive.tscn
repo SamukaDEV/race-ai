@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bd2gvqpxbm2ly"]
+
+[ext_resource type="PackedScene" uid="uid://df8tx4u6ndf7p" path="res://Models/KenneyRacingKit/billboardDouble_exclusive.glb" id="1_ys500"]
+
+[node name="billboardDouble_exclusive" unique_id=1789894364 instance=ExtResource("1_ys500")]
+
+[node name="billboardDouble_exclusive(Clone)" parent="." index="0" unique_id=1778994874]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

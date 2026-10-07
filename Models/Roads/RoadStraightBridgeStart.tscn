@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bvftquh1ugfqp"]
+
+[ext_resource type="PackedScene" uid="uid://ct2ifpqqafjek" path="res://Models/KenneyRacingKit/roadStraightBridgeStart.glb" id="1_n5d8n"]
+
+[node name="roadStraightBridgeStart" unique_id=1691486813 instance=ExtResource("1_n5d8n")]
+
+[node name="roadStraightBridgeStart(Clone)" parent="." index="0" unique_id=2110822422]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

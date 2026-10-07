@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cjnyr82p4bqy5"]
+
+[ext_resource type="PackedScene" uid="uid://bhjitbt314fl" path="res://Models/KenneyRacingKit/grandStandRound.glb" id="1_odtgs"]
+
+[node name="grandStandRound" unique_id=2021001844 instance=ExtResource("1_odtgs")]
+
+[node name="grandStandRound(Clone)" parent="." index="0" unique_id=1019240023]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

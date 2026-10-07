@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://baputu4aijeld"]
+
+[ext_resource type="PackedScene" uid="uid://bl3alxn1lncqw" path="res://Models/KenneyRacingKit/roadPitGarage.glb" id="1_xetap"]
+
+[node name="roadPitGarage" unique_id=554565604 instance=ExtResource("1_xetap")]
+
+[node name="roadPitGarage(Clone)" parent="." index="0" unique_id=343794569]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

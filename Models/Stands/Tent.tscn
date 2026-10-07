@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dwvjj366re5yk"]
+
+[ext_resource type="PackedScene" uid="uid://bgq3hxeyhpgji" path="res://Models/KenneyRacingKit/tent.glb" id="1_ntc3u"]
+
+[node name="tent" unique_id=191777470 instance=ExtResource("1_ntc3u")]
+
+[node name="tent(Clone)" parent="." index="0" unique_id=1281899894]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

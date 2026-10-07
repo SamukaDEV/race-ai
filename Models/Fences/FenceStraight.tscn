@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://ceqypcuwism0a"]
+
+[ext_resource type="PackedScene" uid="uid://c7fgm6gwhenc3" path="res://Models/KenneyRacingKit/fenceStraight.glb" id="1_3krku"]
+
+[node name="fenceStraight" unique_id=59440532 instance=ExtResource("1_3krku")]
+
+[node name="fenceStraight(Clone)" parent="." index="0" unique_id=75137090]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

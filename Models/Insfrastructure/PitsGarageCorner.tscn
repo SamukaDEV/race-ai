@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dn7b1u7lr6dhj"]
+
+[ext_resource type="PackedScene" uid="uid://bygabfsy3wuwn" path="res://Models/KenneyRacingKit/pitsGarageCorner.glb" id="1_f0ksc"]
+
+[node name="pitsGarageCorner" unique_id=1055535556 instance=ExtResource("1_f0ksc")]
+
+[node name="pitsGarageCorner(Clone)" parent="." index="0" unique_id=693155100]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

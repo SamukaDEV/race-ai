@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cc7q34srp4hw8"]
+
+[ext_resource type="PackedScene" uid="uid://cs5gssnb0xast" path="res://Models/KenneyRacingKit/roadSplitLarger.glb" id="1_jwkfv"]
+
+[node name="roadSplitLarger" unique_id=1757923947 instance=ExtResource("1_jwkfv")]
+
+[node name="roadSplitLarger(Clone)" parent="." index="0" unique_id=843821540]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

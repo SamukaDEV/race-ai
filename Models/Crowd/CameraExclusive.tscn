@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://ba7tgi5kkvw44"]
+
+[ext_resource type="PackedScene" uid="uid://deg76dkp5dgun" path="res://Models/KenneyRacingKit/camera_exclusive.glb" id="1_4ahtf"]
+
+[node name="camera_exclusive" unique_id=1741456372 instance=ExtResource("1_4ahtf")]
+
+[node name="camera_exclusive(Clone)" parent="." index="0" unique_id=231671088]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

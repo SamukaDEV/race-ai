@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bdsfl1d6nenb"]
+
+[ext_resource type="PackedScene" uid="uid://drk8pbwajn3f6" path="res://Models/KenneyRacingKit/barrierRed.glb" id="1_b1v5q"]
+
+[node name="barrierRed" unique_id=403903754 instance=ExtResource("1_b1v5q")]
+
+[node name="barrierRed(Clone)" parent="." index="0" unique_id=528335474]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

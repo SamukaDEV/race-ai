@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://d0wx8jjk3owrs"]
+
+[ext_resource type="PackedScene" uid="uid://dhoyakaxi0bwa" path="res://Models/KenneyRacingKit/railDouble.glb" id="1_4wgn0"]
+
+[node name="railDouble" unique_id=248273843 instance=ExtResource("1_4wgn0")]
+
+[node name="railDouble(Clone)" parent="." index="0" unique_id=1298351834]
+transform = Transform3D(5.9604645e-08, 0, -1, 0, 1, 0, 1, 0, 5.9604645e-08, 0, 0, 0)

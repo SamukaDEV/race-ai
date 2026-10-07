@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cr2kav605pmek"]
+
+[ext_resource type="PackedScene" uid="uid://dwxgpvijtulhx" path="res://Models/KenneyRacingKit/roadSide.glb" id="1_mpiu7"]
+
+[node name="roadSide" unique_id=193981418 instance=ExtResource("1_mpiu7")]
+
+[node name="roadSide(Clone)" parent="." index="0" unique_id=375769152]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

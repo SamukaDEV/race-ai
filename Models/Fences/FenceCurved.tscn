@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cgvxl2mlsh553"]
+
+[ext_resource type="PackedScene" uid="uid://c3dlsxd70vwok" path="res://Models/KenneyRacingKit/fenceCurved.glb" id="1_0djnj"]
+
+[node name="fenceCurved" unique_id=838872169 instance=ExtResource("1_0djnj")]
+
+[node name="fenceCurved(Clone)" parent="." index="0" unique_id=777401893]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

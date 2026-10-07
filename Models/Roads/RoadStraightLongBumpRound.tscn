@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cu1avowfn57sd"]
+
+[ext_resource type="PackedScene" uid="uid://b22g4p666gqpo" path="res://Models/KenneyRacingKit/roadStraightLongBumpRound.glb" id="1_muoiq"]
+
+[node name="roadStraightLongBumpRound" unique_id=190313061 instance=ExtResource("1_muoiq")]
+
+[node name="roadStraightLongBumpRound(Clone)" parent="." index="0" unique_id=455134162]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

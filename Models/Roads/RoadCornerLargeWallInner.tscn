@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bv0c46xipngyh"]
+
+[ext_resource type="PackedScene" uid="uid://x2x38i4hl1pt" path="res://Models/KenneyRacingKit/roadCornerLargeWallInner.glb" id="1_qyo6c"]
+
+[node name="roadCornerLargeWallInner" unique_id=1479354283 instance=ExtResource("1_qyo6c")]
+
+[node name="roadCornerLargeWallInner(Clone)" parent="." index="0" unique_id=722451102]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

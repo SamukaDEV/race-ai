@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dtjl14k7t6kg6"]
+
+[ext_resource type="PackedScene" uid="uid://cap411px32mau" path="res://Models/KenneyRacingKit/ramp.glb" id="1_odr0b"]
+
+[node name="ramp" unique_id=1744922488 instance=ExtResource("1_odr0b")]
+
+[node name="ramp(Clone)" parent="." index="0" unique_id=87237961]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

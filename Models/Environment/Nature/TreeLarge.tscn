@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cp8kgj1r6e8ms"]
+
+[ext_resource type="PackedScene" uid="uid://b4r6gmpvam58h" path="res://Models/KenneyRacingKit/treeLarge.glb" id="1_w7iyq"]
+
+[node name="treeLarge" unique_id=1409124637 instance=ExtResource("1_w7iyq")]
+
+[node name="treeLarge(Clone)" parent="." index="0" unique_id=1473562759]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

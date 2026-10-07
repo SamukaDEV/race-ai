@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b0t16p5sqagwk"]
+
+[ext_resource type="PackedScene" uid="uid://q44gthydpra1" path="res://Models/KenneyRacingKit/roadStraightArrow.glb" id="1_oldb3"]
+
+[node name="roadStraightArrow" unique_id=572095926 instance=ExtResource("1_oldb3")]
+
+[node name="roadStraightArrow(Clone)" parent="." index="0" unique_id=1350457063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dy7m3orxspbr7"]
+
+[ext_resource type="PackedScene" uid="uid://ci8uhmuqo1a8q" path="res://Models/KenneyRacingKit/grandStandCoveredRound.glb" id="1_y4qug"]
+
+[node name="grandStandCoveredRound" unique_id=256048594 instance=ExtResource("1_y4qug")]
+
+[node name="grandStandCoveredRound(Clone)" parent="." index="0" unique_id=1450689226]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

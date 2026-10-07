@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dww3ruwc58p8l"]
+
+[ext_resource type="PackedScene" uid="uid://dftckmhtulaj5" path="res://Models/KenneyRacingKit/flagCheckers.glb" id="1_2b4h7"]
+
+[node name="flagCheckers" unique_id=1586012267 instance=ExtResource("1_2b4h7")]
+
+[node name="flagCheckers(Clone)" parent="." index="0" unique_id=501001177]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

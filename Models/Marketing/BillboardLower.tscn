@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bjuw6tdrs7cb"]
+
+[ext_resource type="PackedScene" uid="uid://bqygcfrwnudrb" path="res://Models/KenneyRacingKit/billboardLower.glb" id="1_8lart"]
+
+[node name="billboardLower" unique_id=1501619076 instance=ExtResource("1_8lart")]
+
+[node name="billboardLower(Clone)" parent="." index="0" unique_id=1985992753]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

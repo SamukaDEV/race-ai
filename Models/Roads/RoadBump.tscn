@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dknobue5c01yh"]
+
+[ext_resource type="PackedScene" uid="uid://0d1yrrfncgnx" path="res://Models/KenneyRacingKit/roadBump.glb" id="1_mqpvc"]
+
+[node name="roadBump" unique_id=574612458 instance=ExtResource("1_mqpvc")]
+
+[node name="roadBump(Clone)" parent="." index="0" unique_id=1248652290]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

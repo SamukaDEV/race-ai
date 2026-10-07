@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://coifh0mmf5bw0"]
+
+[ext_resource type="PackedScene" uid="uid://d0yqsbtcj0164" path="res://Models/KenneyRacingKit/overhead.glb" id="1_cdo2u"]
+
+[node name="overhead" unique_id=1297562926 instance=ExtResource("1_cdo2u")]
+
+[node name="overhead(Clone)" parent="." index="0" unique_id=1289355401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

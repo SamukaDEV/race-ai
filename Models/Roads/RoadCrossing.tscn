@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dj0jeqw3myw3c"]
+
+[ext_resource type="PackedScene" uid="uid://n5xterne7hbw" path="res://Models/KenneyRacingKit/roadCrossing.glb" id="1_ryra1"]
+
+[node name="roadCrossing" unique_id=472108154 instance=ExtResource("1_ryra1")]
+
+[node name="roadCrossing(Clone)" parent="." index="0" unique_id=455506200]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

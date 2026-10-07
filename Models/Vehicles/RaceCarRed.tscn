@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://du3pw7w7txyas"]
+
+[ext_resource type="PackedScene" uid="uid://dpmkfar7y7cv4" path="res://Models/KenneyRacingKit/raceCarRed.glb" id="1_82sjr"]
+[ext_resource type="Material" uid="uid://kwt1fa63jx3n" path="res://Materials/tire_material.tres" id="2_c408j"]
+[ext_resource type="Material" uid="uid://bmx6loiapqqxl" path="res://Materials/red_car_material.tres" id="2_k4p7g"]
+[ext_resource type="Material" uid="uid://dxuwwro26o6f8" path="res://Materials/tire_intern_material.tres" id="3_k4p7g"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ps8db"]
+albedo_color = Color(0.18000486, 0.1800049, 0.1800048, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bnbiq"]
+albedo_color = Color(0, 0.17033997, 0.17076185, 0.9254902)
+
+[node name="Car" unique_id=1167577932 instance=ExtResource("1_82sjr")]
+
+[node name="raceCarRed _8angles(Clone)" parent="." index="0" unique_id=1839560095]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+
+[node name="body" parent="raceCarRed _8angles(Clone)" index="0" unique_id=545212724]
+surface_material_override/0 = SubResource("StandardMaterial3D_ps8db")
+surface_material_override/1 = ExtResource("2_k4p7g")
+surface_material_override/2 = SubResource("StandardMaterial3D_bnbiq")
+
+[node name="wheelBackLeft" parent="raceCarRed _8angles(Clone)" index="1" unique_id=961982553]
+surface_material_override/0 = ExtResource("2_c408j")
+surface_material_override/1 = ExtResource("3_k4p7g")
+
+[node name="wheelBackRight" parent="raceCarRed _8angles(Clone)" index="2" unique_id=1379244828]
+surface_material_override/0 = ExtResource("2_c408j")
+surface_material_override/1 = ExtResource("3_k4p7g")
+
+[node name="wheelFrontLeft" parent="raceCarRed _8angles(Clone)" index="3" unique_id=678205373]
+surface_material_override/0 = ExtResource("2_c408j")
+surface_material_override/1 = ExtResource("3_k4p7g")
+
+[node name="wheelFrontRight" parent="raceCarRed _8angles(Clone)" index="4" unique_id=1475686398]
+surface_material_override/0 = ExtResource("2_c408j")
+surface_material_override/1 = ExtResource("3_k4p7g")

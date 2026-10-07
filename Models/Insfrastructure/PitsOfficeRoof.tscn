@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b23h06gdhvj7h"]
+
+[ext_resource type="PackedScene" uid="uid://dqxjg28hwd1y0" path="res://Models/KenneyRacingKit/pitsOfficeRoof.glb" id="1_q3sh7"]
+
+[node name="pitsOfficeRoof" unique_id=1833567778 instance=ExtResource("1_q3sh7")]
+
+[node name="pitsOfficeRoof(Clone)" parent="." index="0" unique_id=5106673]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)

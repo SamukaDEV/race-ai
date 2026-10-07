@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://dvp7uoghix3sl"]
+
+[ext_resource type="PackedScene" uid="uid://k80osuptrvk4" path="res://Models/KenneyRacingKit/roadStartPositions.glb" id="1_3eo1t"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vwu1n"]
+size = Vector3(0.1568451, 0.49023438, 1.9934082)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v4pr5"]
+size = Vector3(0.1568451, 0.49023438, 1.9934082)
+
+[node name="roadStartPositions" unique_id=439339537 instance=ExtResource("1_3eo1t")]
+
+[node name="roadStartPositions(Clone)" parent="." index="0" unique_id=432370214]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1" unique_id=1395909270 groups=["track_obstacle"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0" unique_id=836237130]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07837677, 0.12207031, -1.0030518)
+shape = SubResource("BoxShape3D_vwu1n")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" index="1" unique_id=1941306361]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92115676, 0.12207031, -1.0030518)
+shape = SubResource("BoxShape3D_v4pr5")
