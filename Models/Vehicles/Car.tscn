@@ -327,7 +327,7 @@ shadow_mesh = SubResource("ArrayMesh_abews")
 [node name="Car" type="CharacterBody3D" unique_id=2107987698]
 collision_layer = 2
 script = ExtResource("1_u3pm4")
-max_speed = 50.0
+max_speed = 100.0
 acceleration = 10.0
 brake_force = 50.0
 steering_speed = 2.0

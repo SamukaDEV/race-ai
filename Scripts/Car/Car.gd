@@ -96,6 +96,7 @@ func die() -> void:
 	alive = false
 	velocity = Vector3.ZERO
 	set_car_color(Color(0.691, 0.691, 0.691, 1.0))
+	set_car_text("Dead")
 
 func get_fitness() -> float:
 	return distance_traveled
