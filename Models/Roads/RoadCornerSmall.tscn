@@ -2,7 +2,46 @@
 
 [ext_resource type="PackedScene" uid="uid://cjln0ww132hgi" path="res://Models/KenneyRacingKit/roadCornerSmall.glb" id="1_abpvx"]
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_aficr"]
+radius = 0.15576172
+height = 0.9916992
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_h2rh7"]
+size = Vector3(0.14208984, 1, 0.36641693)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2rh7"]
+albedo_color = Color(1, 0.58431375, 1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_acb8g"]
+material = SubResource("StandardMaterial3D_h2rh7")
+
 [node name="roadCornerSmall" unique_id=1601778326 instance=ExtResource("1_abpvx")]
 
 [node name="roadCornerSmall(Clone)" parent="." index="0" unique_id=758257322]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1" unique_id=1766100185 groups=["track_obstacle"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0" unique_id=1980082917]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.0031738281, 0)
+shape = SubResource("CapsuleShape3D_aficr")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" index="1" unique_id=586976724]
+transform = Transform3D(0.9894147, 0, -0.14511576, 0, 1, 0, 0.14511576, 0, 0.9894147, 0.109698676, 0, -0.1735052)
+shape = SubResource("BoxShape3D_h2rh7")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="StaticBody3D" index="2" unique_id=1128592033]
+transform = Transform3D(0.87461084, 0, -0.4848256, 0, 1, 0, 0.4848256, 0, 0.87461084, 0.2310902, 0, -0.48600492)
+shape = SubResource("BoxShape3D_h2rh7")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="StaticBody3D" index="3" unique_id=826873454]
+transform = Transform3D(0.65106696, 0, -0.7590203, 0, 1, 0, 0.7590203, 0, 0.65106696, 0.47203994, 0, -0.7567044)
+shape = SubResource("BoxShape3D_h2rh7")
+
+[node name="CollisionShape3D5" type="CollisionShape3D" parent="StaticBody3D" index="4" unique_id=91382351]
+transform = Transform3D(0.1055496, 0, -0.99441415, 0, 1, 0, 0.99441415, 0, 0.1055496, 0.82349575, 0, -0.89970744)
+shape = SubResource("BoxShape3D_h2rh7")
+
+[node name="HAS_COLISION" type="MeshInstance3D" parent="." index="2" unique_id=842921123]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0, 0.26311576, 0)
+mesh = SubResource("SphereMesh_acb8g")

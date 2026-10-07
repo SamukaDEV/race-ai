@@ -8,6 +8,12 @@ size = Vector3(0.1568451, 0.49023438, 1.9934082)
 [sub_resource type="BoxShape3D" id="BoxShape3D_v4pr5"]
 size = Vector3(0.1568451, 0.49023438, 1.9934082)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qd2g5"]
+albedo_color = Color(1, 0.58431375, 1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_vwu1n"]
+material = SubResource("StandardMaterial3D_qd2g5")
+
 [node name="roadStartPositions" unique_id=439339537 instance=ExtResource("1_3eo1t")]
 
 [node name="roadStartPositions(Clone)" parent="." index="0" unique_id=432370214]
@@ -22,3 +28,7 @@ shape = SubResource("BoxShape3D_vwu1n")
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" index="1" unique_id=1941306361]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92115676, 0.12207031, -1.0030518)
 shape = SubResource("BoxShape3D_v4pr5")
+
+[node name="HAS_COLISION" type="MeshInstance3D" parent="." index="2" unique_id=1935293073]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0, 0.26311576, 0)
+mesh = SubResource("SphereMesh_vwu1n")

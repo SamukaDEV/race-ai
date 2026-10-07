@@ -2,7 +2,23 @@
 
 [ext_resource type="PackedScene" uid="uid://dbcakj2u64043" path="res://Models/KenneyRacingKit/roadStart.glb" id="1_ptnqn"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_5aekg"]
+size = Vector3(0.1568451, 0.49023438, 1.9934082)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mhi6v"]
+size = Vector3(0.1568451, 0.49023438, 1.9934082)
+
 [node name="roadStart" unique_id=1208418997 instance=ExtResource("1_ptnqn")]
 
 [node name="roadStart(Clone)" parent="." index="0" unique_id=767117711]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1" unique_id=1913589209 groups=["track_obstacle"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0" unique_id=1371200277]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07837677, 0.12207031, -1.0030518)
+shape = SubResource("BoxShape3D_5aekg")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" index="1" unique_id=512950120]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92115676, 0.12207031, -1.0030518)
+shape = SubResource("BoxShape3D_mhi6v")

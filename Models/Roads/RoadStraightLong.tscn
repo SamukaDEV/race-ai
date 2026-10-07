@@ -2,7 +2,33 @@
 
 [ext_resource type="PackedScene" uid="uid://2q5qgjtrdytf" path="res://Models/KenneyRacingKit/roadStraightLong.glb" id="1_ma8s2"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_j2lt7"]
+size = Vector3(0.1568451, 0.49023438, 1.9934082)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1oxu4"]
+size = Vector3(0.1568451, 0.49023438, 1.9934082)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j2lt7"]
+albedo_color = Color(1, 0.58431375, 1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_1oxu4"]
+material = SubResource("StandardMaterial3D_j2lt7")
+
 [node name="roadStraightLong" unique_id=1478282026 instance=ExtResource("1_ma8s2")]
 
 [node name="roadStraightLong(Clone)" parent="." index="0" unique_id=692987272]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="1" unique_id=1235500091 groups=["track_obstacle"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0" unique_id=669509584]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07837677, 0.12207031, -1.0030518)
+shape = SubResource("BoxShape3D_j2lt7")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" index="1" unique_id=751037801]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92115676, 0.12207031, -1.0030518)
+shape = SubResource("BoxShape3D_1oxu4")
+
+[node name="HAS_COLISION" type="MeshInstance3D" parent="." index="2" unique_id=857448379]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0, 0.26311576, 0)
+mesh = SubResource("SphereMesh_1oxu4")
