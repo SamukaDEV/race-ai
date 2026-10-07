@@ -75,7 +75,7 @@ func apply_controls(gas: float, steer: float, delta: float) -> void:
 	
 	# Movimento
 	
-	var forward: Vector3 = global_transform.basis.z
+	var forward: Vector3 = -global_transform.basis.z
 	
 	velocity.x = forward.x * speed_value
 	velocity.z = forward.z * speed_value
@@ -97,6 +97,8 @@ func die() -> void:
 	velocity = Vector3.ZERO
 	set_car_color(Color(0.691, 0.691, 0.691, 1.0))
 	set_car_text("Dead")
+	if sensors:
+		sensors.clear_debug() # Limpa as linhas ao morrer
 
 func get_fitness() -> float:
 	return distance_traveled
