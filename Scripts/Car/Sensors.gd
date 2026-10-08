@@ -12,7 +12,8 @@ static var global_debug: bool = true
 @export var sensor_offset := Vector3(0.0, 0.05, 0.15)
 
 const SENSOR_COUNT: int = 5
-const MAX_DISTANCE: float = 0.2
+#const MAX_DISTANCE: float = 0.2
+const MAX_DISTANCE: float = .25
 
 var sensor_angles: Array = [
 	deg_to_rad(-45.0),

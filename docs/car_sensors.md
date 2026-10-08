@@ -21,8 +21,12 @@ O carro herda de `CharacterBody3D` e implementa física arcade customizada para 
   1. Marca `alive = false`.
   2. Zera a velocidade.
   3. Altera a cor do veículo para cinza.
-  4. Define o texto visual para `"Dead"`.
+  4. Define o texto visual para `"Crash"`.
   5. Desativa e limpa as linhas de depuração dos sensores.
+* **Watchdog de Inatividade (Timeout)**:
+  * Parâmetros: `enable_idle_timeout = true`, `max_idle_time = 3.0` segundos, `min_moving_speed = 2.0`.
+  * Se o carro permanecer com velocidade abaixo de `min_moving_speed` por mais de `max_idle_time`, ele é eliminado com o rótulo visual `"Idle"`.
+  * Evita que carros fiquem travando a simulação sem progredir ou bloqueando o grid de largada.
 
 ---
 

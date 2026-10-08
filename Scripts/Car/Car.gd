@@ -6,6 +6,11 @@ extends CharacterBody3D
 @export var brake_force: float = 300.0
 @export var steering_speed: float = 2.5
 
+@export_group("Inatividade / Timeout")
+@export var enable_idle_timeout: bool = true
+@export var max_idle_time: float = 3.0 ## Tempo máximo (segundos) que o carro pode ficar parado antes de ser eliminado
+@export var min_moving_speed: float = 2.0 ## Velocidade mínima para reiniciar o contador de inatividade
+
 @onready var sensors: CarSensors = $Sensors
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 
@@ -15,6 +20,7 @@ var genome: Genome
 var speed_value: float = 0.0
 var alive: bool = true
 var distance_traveled: float = 0.0
+var idle_timer: float = 0.0
 
 func setup(p_genome: Genome) -> void:
 	genome = p_genome
@@ -40,7 +46,8 @@ func _physics_process(delta: float) -> void:
 	
 	var outputs := neural_network.forward(inputs)
 	
-	var gas := outputs[0]
+	#var gas := outputs[0]
+	var gas := (outputs[0] + 1.0) * 0.5 # Transforma [-1.0, 1.0] em [0.0, 1.0] (sempre anda para frente)
 	var steer := outputs[1]
 	
 	apply_controls(gas, steer, delta)
@@ -55,8 +62,18 @@ func _physics_process(delta: float) -> void:
 		var collider := collision.get_collider()
 		if collider.is_in_group("track_obstacle"):
 			print("CAR: ", name, " Collided with ", collider)
-			die()
+			die("Crash")
 			break
+
+	# TIMEOUT DE INATIVIDADE (Elimina carros parados ou presos)
+	if enable_idle_timeout and alive:
+		if speed_value < min_moving_speed:
+			idle_timer += delta
+			if idle_timer >= max_idle_time:
+				die("Idle")
+				return
+		else:
+			idle_timer = 0.0
 	
 func apply_controls(gas: float, steer: float, delta: float) -> void:
 	# Aceleração / freio
@@ -92,11 +109,11 @@ func get_direction_input() -> float:
 	
 	return sin(rotation.y)
 
-func die() -> void:
+func die(reason: String = "Dead") -> void:
 	alive = false
 	velocity = Vector3.ZERO
 	set_car_color(Color(0.691, 0.691, 0.691, 1.0))
-	set_car_text("Dead")
+	set_car_text(reason)
 	if sensors:
 		sensors.clear_debug() # Limpa as linhas ao morrer
 

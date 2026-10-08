@@ -3,14 +3,14 @@ extends Camera3D
 
 ## Modos de movimentação no espaço
 enum MovementMode {
-	FLY_3D,  ## Modo Voo 3D: 'W' move diretamente para onde a câmera/mouse está apontando (incluindo subida/descida na inclinação).
-	PLANAR   ## Modo Plano: 'W' e 'S' movem no plano horizontal (XZ), altitude controlada exclusivamente por 'Espaço' e 'Shift'.
+	FLY_3D,  ## Modo Voo 3D: [code]W[/code] move diretamente para onde a [b]câmera/mouse[/b] está apontando (incluindo subida/descida na inclinação).
+	PLANAR   ## Modo Plano: [code]W[/code] e [code]S[/code] movem no plano horizontal (XZ), altitude controlada exclusivamente por [code]Espaço[/code] e [code]Shift[/code].
 }
 
 ## Modos de ativação do controle de visão com mouse
 enum MouseControlMode {
 	HOLD_RIGHT_CLICK, ## Rotaciona apenas enquanto segurar o Botão Direito do Mouse (estilo editor Godot/Unreal).
-	MOUSE_CAPTURED,   ## Cursor sempre capturado (estilo FPS). Pressione ESC para soltar/recapturar.
+	MOUSE_CAPTURED,   ## Cursor sempre capturado (estilo FPS). Pressione [code]ESC[/code] para soltar/recapturar.
 	HOLD_LEFT_CLICK,  ## Rotaciona apenas enquanto segurar o Botão Esquerdo do Mouse.
 	TOGGLE_KEY        ## Alterna entre capturado e livre ao pressionar uma tecla configurada.
 }
@@ -36,7 +36,7 @@ enum MouseControlMode {
 		mouse_control_mode = value
 		if is_inside_tree() and active:
 			_update_initial_mouse_state()
-## Se ativado, Espaço e Shift sobem e descem no eixo Y global do mundo (altitude real).
+## Se ativado, [code]Espaço[/code] e [code]Shift[/code] sobem e descem no eixo [code]Y global[/code] do mundo (altitude real).
 ## Se desativado, sobem e descem relativo à orientação local da câmera.
 @export var vertical_movement_global: bool = true
 
