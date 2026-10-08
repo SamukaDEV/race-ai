@@ -18,6 +18,7 @@ Através de **Neuroevolução**, cada veículo possui sua própria rede neural a
 * 🧬 **Algoritmo Genético Robusto**: Genomas com 434 parâmetros de precisão `float32`, seleção natural, elitismo e mutação gaussiana.
 * 📡 **Sensores Raycast com Debug Visual**: 5 feixes de proximidade por veículo com alternância global de depuração visual via tecla `F3`.
 * 📷 **Câmera Livre Configurável (`FreeCamera`)**: Navegação fluida em 3D ou planar horizontal com controles familiares (`WASD`, `Shift`, `Espaço`), rotação por mouse e ajuste de velocidade dinâmico por scroll.
+* 🏁 **Contagem de Voltas (LAPs) & HUD em Tempo Real**: Telemetria na tela com voltas do líder, recorde histórico da sessão, status dos carros e setores/checkpoints validados.
 * ⚡ **Motor Físico Jolt 3D**: Simulação física de alta estabilidade e desempenho integrada ao Godot 4.
 
 ---

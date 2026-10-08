@@ -328,7 +328,7 @@ shadow_mesh = SubResource("ArrayMesh_abews")
 collision_layer = 2
 script = ExtResource("1_u3pm4")
 max_speed = 100.0
-acceleration = 10.0
+acceleration = 30.0
 brake_force = 50.0
 steering_speed = 2.0
 

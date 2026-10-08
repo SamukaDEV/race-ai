@@ -2,10 +2,15 @@ class_name Simulation
 extends Node3D
 
 @export var car_scene: PackedScene
-@export var population_size: int = 6
+@export var population_size: int = 100
+@export var start_position: bool = false
+
+signal lap_recorded(car: RaceCar, lap_count: int)
 
 var population: Population
 var cars: Array[RaceCar] = []
+var current_max_laps: int = 0
+var all_time_max_laps: int = 0
 
 func _ready() -> void:
 	randomize()
@@ -24,6 +29,7 @@ func _ready() -> void:
 	start_generation()
 
 func start_generation() -> void:
+	current_max_laps = 0
 	for car in cars:
 		if is_instance_valid(car):
 			car.queue_free()
@@ -37,22 +43,30 @@ func start_generation() -> void:
 		car.name = "car_" + str(car_index)
 		add_child(car)
 		
-		car.global_position = Vector3(0.35, 0.3, 0.25)
+		car.global_position = Vector3(0.35, 0.05, 0.25)
 		car.rotation = Vector3.ZERO
 		
 		# Posicionar o carro no lugar correto
 		
 		var d: float = (car_index * (car.get_car_length() + 0.3))
-		car.global_position.z = d
+		if start_position:
+			car.global_position.z = d
 		car.random_car_color()
 		car.set_car_text("i: " + str(car_index))
 		if car_index % 2 == 0:
 			car.global_position.x += 0.3
 		
 		car.setup(genome)
+		car.lap_completed.connect(_on_car_lap_completed)
 		cars.append(car)
 		
 		car_index += 1
+
+func _on_car_lap_completed(car: RaceCar, lap_count: int) -> void:
+	current_max_laps = max(current_max_laps, lap_count)
+	all_time_max_laps = max(all_time_max_laps, lap_count)
+	emit_signal("lap_recorded", car, lap_count)
+	print("🏁 LAP! %s completou a volta %d (Recorde da Sessão: %d)" % [car.name, lap_count, all_time_max_laps])
 
 func _physics_process(_delta: float) -> void:
 	if cars.is_empty():

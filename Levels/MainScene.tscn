@@ -12,6 +12,8 @@
 [ext_resource type="PackedScene" uid="uid://bremrol2nbrmg" path="res://Models/Roads/RoadStraightLong.tscn" id="8_rc4gq"]
 [ext_resource type="PackedScene" uid="uid://dwvjj366re5yk" path="res://Models/Stands/Tent.tscn" id="11_v8p1f"]
 [ext_resource type="Script" uid="uid://br624aexboj5b" path="res://Scripts/FreeCamera.gd" id="12_fcam"]
+[ext_resource type="Script" uid="uid://c18s2h54vr6ie" path="res://Scripts/Track/Track.gd" id="13_track"]
+[ext_resource type="Script" uid="uid://ciwcm2dsw1e7d" path="res://Scripts/UI/HUD.gd" id="14_hud"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_aficr"]
 size = Vector3(300, 10, 300)
@@ -71,6 +73,7 @@ shadow_enabled = true
 [node name="Vehicles" type="Node3D" parent="." unique_id=644329868]
 
 [node name="Track" type="Node3D" parent="." unique_id=1132768901]
+script = ExtResource("13_track")
 
 [node name="Roads" type="Node3D" parent="Track" unique_id=608796672]
 
@@ -175,9 +178,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 0)
 [node name="Simulation" type="Node3D" parent="." unique_id=1537953601]
 script = ExtResource("6_ajdda")
 car_scene = ExtResource("7_lljjv")
+population_size = 10
 metadata/_custom_type_script = "uid://bpynhobgwfy1h"
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1359844354]
 transform = Transform3D(0.075785674, 0.13973291, -0.98728484, 0.020306721, 0.9897107, 0.14163505, 0.99691737, -0.030782424, 0.07216838, -1.2999992, 0.50062966, 2.2999997)
 script = ExtResource("12_fcam")
 base_speed = 3.0
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=987654321]
+script = ExtResource("14_hud")

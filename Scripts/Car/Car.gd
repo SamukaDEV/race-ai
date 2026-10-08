@@ -14,6 +14,8 @@ extends CharacterBody3D
 @onready var sensors: CarSensors = $Sensors
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 
+signal lap_completed(car: RaceCar, lap_count: int)
+
 var neural_network: NeuralNetwork
 var genome: Genome
 
@@ -21,6 +23,9 @@ var speed_value: float = 0.0
 var alive: bool = true
 var distance_traveled: float = 0.0
 var idle_timer: float = 0.0
+var laps: int = 0
+var current_checkpoint_index: int = 0
+var death_reason: String = ""
 
 func setup(p_genome: Genome) -> void:
 	genome = p_genome
@@ -111,6 +116,7 @@ func get_direction_input() -> float:
 
 func die(reason: String = "Dead") -> void:
 	alive = false
+	death_reason = reason
 	velocity = Vector3.ZERO
 	set_car_color(Color(0.691, 0.691, 0.691, 1.0))
 	set_car_text(reason)
@@ -118,7 +124,27 @@ func die(reason: String = "Dead") -> void:
 		sensors.clear_debug() # Limpa as linhas ao morrer
 
 func get_fitness() -> float:
-	return distance_traveled
+	return distance_traveled + (laps * 500.0)
+
+## Registra a passagem por um checkpoint na ordem correta
+func register_checkpoint(checkpoint_idx: int, total_checkpoints: int) -> bool:
+	if not alive:
+		return false
+	
+	if checkpoint_idx == current_checkpoint_index:
+		current_checkpoint_index += 1
+		# Se completou toda a sequência de checkpoints até a linha de chegada
+		if current_checkpoint_index >= total_checkpoints:
+			laps += 1
+			current_checkpoint_index = 0
+			emit_signal("lap_completed", self, laps)
+			update_car_label()
+			return true
+	return false
+
+func update_car_label() -> void:
+	if alive:
+		set_car_text("%s | L: %d" % [name, laps])
 
 func _on_body_entered(_body: Node3D) -> void:
 	die()
