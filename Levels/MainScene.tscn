@@ -187,4 +187,6 @@ script = ExtResource("12_fcam")
 base_speed = 3.0
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=987654321]
+scale = Vector2(0.8, 0.8)
+transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
 script = ExtResource("14_hud")
