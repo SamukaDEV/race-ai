@@ -1,9 +1,9 @@
 {
 	"all_time_max_laps": 0,
-	"fitness": 3860.67843977868,
+	"fitness": 281.178439779957,
 	"generation": 171,
 	"genome": {
-		"fitness": 3860.67843977868,
+		"fitness": 281.178439779957,
 		"genes": [
 			-0.400596261024475,
 			-1.36207664012909,
@@ -442,5 +442,5 @@
 		]
 	},
 	"model_type": "RaceAI_Best_Pilot",
-	"timestamp": "2026-10-08T13:38:34"
+	"timestamp": "2026-10-08T14:54:02"
 }
