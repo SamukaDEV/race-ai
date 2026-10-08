@@ -2,6 +2,9 @@ class_name Population
 extends Node
 
 @export var population_size: int = 6 # on the example the default value was 100
+@export var mutation_rate: float = 0.05
+@export var mutation_power: float = 0.2
+@export var elite_count: int = 1
 
 var genomes: Array[Genome] = []
 var generation: int = 0
@@ -32,13 +35,15 @@ func create_next_generation() -> void:
 	
 	var next_generation: Array[Genome] = []
 	
-	# Mantém o melhor indivíduo intacto
-	next_generation.append(survivors[0].copy())
+	# Mantém os melhores indivíduos intactos (Elitismo)
+	var actual_elites: int = clamp(elite_count, 1, survivors_count)
+	for e in range(actual_elites):
+		next_generation.append(survivors[e].copy())
 	
 	while next_generation.size() < population_size:
 		var parent: Genome = survivors.pick_random()
 		var child: Genome = parent.copy()
-		child.mutate(0.05, 0.2)
+		child.mutate(mutation_rate, mutation_power)
 		next_generation.append(child)
 	
 	genomes = next_generation
@@ -57,6 +62,9 @@ func to_dict() -> Dictionary:
 	return {
 		"generation": generation,
 		"population_size": population_size,
+		"mutation_rate": mutation_rate,
+		"mutation_power": mutation_power,
+		"elite_count": elite_count,
 		"genomes": genomes_data
 	}
 
@@ -64,6 +72,9 @@ func to_dict() -> Dictionary:
 func load_from_dict(data: Dictionary) -> void:
 	generation = int(data.get("generation", 0))
 	population_size = int(data.get("population_size", population_size))
+	mutation_rate = float(data.get("mutation_rate", mutation_rate))
+	mutation_power = float(data.get("mutation_power", mutation_power))
+	elite_count = int(data.get("elite_count", elite_count))
 	genomes.clear()
 	
 	var raw_genomes: Array = data.get("genomes", [])

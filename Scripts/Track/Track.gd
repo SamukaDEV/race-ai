@@ -13,33 +13,42 @@ const PROJECT_TRACKS_DIR: String = "res://tracks/"
 
 var total_checkpoints: int = 4
 var current_track_data: Dictionary = {}
+var current_track_config: Dictionary = {}
 
 var _roads_container: Node3D
 var _checkpoints_container: Node3D
 
 
 func _ready() -> void:
-	_roads_container = get_node_or_null("Roads")
-	if not _roads_container:
-		_roads_container = Node3D.new()
-		_roads_container.name = "Roads"
-		add_child(_roads_container)
-
-	_checkpoints_container = Node3D.new()
-	_checkpoints_container.name = "Checkpoints"
-	add_child(_checkpoints_container)
-
+	_ensure_containers()
 	_load_initial_track()
 
 
+func _ensure_containers() -> void:
+	if not _roads_container:
+		_roads_container = get_node_or_null("Roads")
+		if not _roads_container:
+			_roads_container = Node3D.new()
+			_roads_container.name = "Roads"
+			add_child(_roads_container)
+
+	if not _checkpoints_container:
+		_checkpoints_container = get_node_or_null("Checkpoints")
+		if not _checkpoints_container:
+			_checkpoints_container = Node3D.new()
+			_checkpoints_container.name = "Checkpoints"
+			add_child(_checkpoints_container)
+
+
 func _load_initial_track() -> void:
+	var app_state: Node = get_node_or_null("/root/AppState")
 	# Se vier do editor para teste rápido com dados em memória
-	if AppState and AppState.is_testing_editor_track and not AppState.temporary_editor_track_data.is_empty():
-		load_track_from_dict(AppState.temporary_editor_track_data)
+	if app_state and app_state.is_testing_editor_track and not app_state.temporary_editor_track_data.is_empty():
+		load_track_from_dict(app_state.temporary_editor_track_data)
 		return
 
 	# Caso contrário, carrega a pista atual configurada no AppState
-	var track_id: String = AppState.current_track_id if AppState else "default_circuit"
+	var track_id: String = app_state.current_track_id if app_state else "default_circuit"
 	load_track(track_id)
 
 
@@ -79,7 +88,9 @@ func load_track(track_id: String) -> bool:
 
 ## Reconstrói a pista inteira e seus checkpoints a partir de um dicionário
 func load_track_from_dict(data: Dictionary) -> bool:
+	_ensure_containers()
 	current_track_data = data
+	current_track_config = data.get("config", {})
 	_clear_current_track()
 
 	var pieces: Array = data.get("pieces", [])
@@ -172,3 +183,52 @@ func get_spawn_transform() -> Transform3D:
 		t = t.rotated(Vector3.UP, deg_to_rad(rot_deg))
 		return t
 	return Transform3D(Basis(), Vector3(0.35, 0.3, 0.25))
+
+
+## Retorna o dicionário com as configurações de simulação e IA da pista ativa
+func get_track_config() -> Dictionary:
+	return current_track_config
+
+
+## Procura todos os nós Marker3D dentro de SpawnPoints das peças RoadStartPositions,
+## retornando suas transformações globais ordenadas da frente (pole) para trás.
+func get_spawn_points() -> Array[Transform3D]:
+	var collected_transforms: Array[Transform3D] = []
+	if not _roads_container:
+		return collected_transforms
+
+	var pieces_with_spawns: Array[Node3D] = []
+	for child in _roads_container.get_children():
+		if child is Node3D and child.has_node("SpawnPoints"):
+			pieces_with_spawns.append(child)
+
+	if pieces_with_spawns.is_empty():
+		return collected_transforms
+
+	for piece in pieces_with_spawns:
+		var piece_t: Transform3D = piece.global_transform if piece.is_inside_tree() else piece.transform
+		var sp_node: Node = piece.get_node("SpawnPoints")
+		for sp_child in sp_node.get_children():
+			if sp_child is Marker3D:
+				var m_t: Transform3D = piece_t * sp_child.transform
+				collected_transforms.append(m_t)
+
+	if collected_transforms.is_empty():
+		return collected_transforms
+
+	# Ordena os marcadores: da vaga mais adiantada no sentido da pista para a mais recuada
+	collected_transforms.sort_custom(
+		func(a: Transform3D, b: Transform3D) -> bool:
+			var fwd_a: Vector3 = a.basis.z
+			var fwd_b: Vector3 = b.basis.z
+			var proj_a: float = a.origin.dot(fwd_a)
+			var proj_b: float = b.origin.dot(fwd_b)
+			# Se estiverem praticamente na mesma linha longitudinal, ordena da esquerda para direita
+			if abs(proj_a - proj_b) < 0.15:
+				var side_a: float = a.origin.dot(a.basis.x)
+				var side_b: float = b.origin.dot(b.basis.x)
+				return side_a < side_b
+			return proj_a > proj_b
+	)
+
+	return collected_transforms

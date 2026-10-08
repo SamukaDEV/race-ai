@@ -24,6 +24,17 @@ var _hovered_grid_pos: Vector3 = Vector3.ZERO
 var _is_hovering_ground: bool = false
 var _is_mouse_over_ui: bool = false
 
+# Configurações da simulação e IA associadas à pista
+var current_track_config: Dictionary = {
+	"population_size": 4,
+	"max_idle_time": 3.0,
+	"enable_idle_timeout": true,
+	"mutation_rate": 0.05,
+	"mutation_power": 0.2,
+	"elite_count": 1,
+	"max_speed": 300.0
+}
+
 # Nós de interface criados dinamicamente
 var _line_edit_name: LineEdit
 var _toast_panel: PanelContainer
@@ -31,6 +42,17 @@ var _toast_label: Label
 var _toast_timer: Timer
 var _load_modal: PanelContainer
 var _track_list_container: VBoxContainer
+
+# Nós de interface do modal de configurações
+var _settings_modal: PanelContainer
+var _cfg_lbl_spots: Label
+var _cfg_spin_pop: SpinBox
+var _cfg_spin_idle: SpinBox
+var _cfg_check_idle: CheckBox
+var _cfg_spin_mut_rate: SpinBox
+var _cfg_spin_mut_power: SpinBox
+var _cfg_spin_elite: SpinBox
+var _cfg_spin_speed: SpinBox
 
 
 func _ready() -> void:
@@ -212,6 +234,7 @@ func get_track_data() -> Dictionary:
 		"track_name": track_name,
 		"created_at": Time.get_datetime_string_from_system(),
 		"grid_size": grid_size,
+		"config": current_track_config.duplicate(),
 		"spawn_point": {
 			"position": [spawn_pos.x, spawn_pos.y, spawn_pos.z],
 			"rotation_y_deg": spawn_rot
@@ -219,6 +242,16 @@ func get_track_data() -> Dictionary:
 		"pieces": pieces_arr,
 		"checkpoints": checkpoints_arr
 	}
+
+
+## Retorna o total de vagas de largada físicas disponíveis nas peças RoadStartPositions colocadas
+func get_detected_spawn_spots_count() -> int:
+	var count: int = 0
+	for piece_info in placed_pieces.values():
+		var pid: String = piece_info.get("piece_id", "")
+		if pid == "RoadStartPositions":
+			count += 4
+	return count
 
 
 func _generate_checkpoints(pieces: Array, spawn_pos: Vector3) -> Array:
@@ -304,6 +337,19 @@ func load_track_from_file(filepath: String) -> bool:
 	var data: Dictionary = json.data as Dictionary
 	clear_all_pieces()
 
+	if data.has("config") and data["config"] is Dictionary:
+		current_track_config = data["config"].duplicate()
+	else:
+		current_track_config = {
+			"population_size": 4,
+			"max_idle_time": 3.0,
+			"enable_idle_timeout": true,
+			"mutation_rate": 0.05,
+			"mutation_power": 0.2,
+			"elite_count": 1,
+			"max_speed": 300.0
+		}
+
 	if _line_edit_name:
 		_line_edit_name.text = data.get("track_name", "Pista Carregada")
 
@@ -328,11 +374,12 @@ func test_in_simulation() -> void:
 	# Salva a pista para que os dados persistam
 	save_track()
 
-	if AppState:
-		AppState.current_track_id = track_data["track_id"]
-		AppState.current_track_name = track_data["track_name"]
-		AppState.is_testing_editor_track = true
-		AppState.temporary_editor_track_data = track_data
+	var app_state: Node = get_node_or_null("/root/AppState")
+	if app_state:
+		app_state.current_track_id = track_data["track_id"]
+		app_state.current_track_name = track_data["track_name"]
+		app_state.is_testing_editor_track = true
+		app_state.temporary_editor_track_data = track_data
 
 	get_tree().change_scene_to_file("res://Levels/MainScene.tscn")
 
@@ -347,6 +394,8 @@ func go_to_main_menu() -> void:
 func _setup_editor_ui() -> void:
 	var canvas := CanvasLayer.new()
 	add_child(canvas)
+	
+	canvas.scale = Vector2(0.8, 0.8)
 
 	# --- BARRA SUPERIOR (AÇÕES & NOME DA PISTA) ---
 	var top_panel := PanelContainer.new()
@@ -399,6 +448,11 @@ func _setup_editor_ui() -> void:
 	btn_load.text = "📂 Carregar Pista"
 	btn_load.pressed.connect(_open_load_modal)
 	top_hbox.add_child(btn_load)
+
+	var btn_settings := Button.new()
+	btn_settings.text = "⚙️ Configurações"
+	btn_settings.pressed.connect(_open_settings_modal)
+	top_hbox.add_child(btn_settings)
 
 	var btn_clear := Button.new()
 	btn_clear.text = "🧹 Limpar"
@@ -472,6 +526,9 @@ func _setup_editor_ui() -> void:
 	# --- MODAL DE CARREGAMENTO ---
 	_setup_load_modal(canvas)
 
+	# --- MODAL DE CONFIGURAÇÕES DA PISTA ---
+	_setup_settings_modal(canvas)
+
 	# --- TOAST NOTIFICATION ---
 	_setup_toast_ui(canvas)
 
@@ -544,6 +601,221 @@ func _open_load_modal() -> void:
 			_track_list_container.add_child(btn)
 
 	_load_modal.visible = true
+
+
+func _setup_settings_modal(canvas: CanvasLayer) -> void:
+	_settings_modal = PanelContainer.new()
+	_settings_modal.visible = false
+	_settings_modal.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_settings_modal.custom_minimum_size = Vector2(440, 390)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.1, 0.15, 0.98)
+	style.set_corner_radius_all(10)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(0.0, 0.8, 1.0, 0.8)
+	style.content_margin_left = 20
+	style.content_margin_top = 16
+	style.content_margin_right = 20
+	style.content_margin_bottom = 16
+	_settings_modal.add_theme_stylebox_override("panel", style)
+	canvas.add_child(_settings_modal)
+
+	_connect_mouse_filter(_settings_modal)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	_settings_modal.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "⚙️ CONFIGURAÇÕES DA PISTA & SIMULAÇÃO"
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
+	vbox.add_child(title)
+
+	_cfg_lbl_spots = Label.new()
+	_cfg_lbl_spots.add_theme_font_size_override("font_size", 11)
+	_cfg_lbl_spots.text = "🚦 Vagas de largada detectadas: 0"
+	vbox.add_child(_cfg_lbl_spots)
+
+	vbox.add_child(HSeparator.new())
+
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 14)
+	grid.add_theme_constant_override("v_separation", 8)
+	vbox.add_child(grid)
+
+	# 1. População de Carros
+	var lbl_pop := Label.new()
+	lbl_pop.text = "Quantidade de Carros:"
+	lbl_pop.add_theme_font_size_override("font_size", 12)
+	grid.add_child(lbl_pop)
+
+	var pop_hbox := HBoxContainer.new()
+	pop_hbox.add_theme_constant_override("separation", 6)
+	_cfg_spin_pop = SpinBox.new()
+	_cfg_spin_pop.min_value = 1
+	_cfg_spin_pop.max_value = 100
+	_cfg_spin_pop.step = 1
+	_cfg_spin_pop.value = 4
+	pop_hbox.add_child(_cfg_spin_pop)
+
+	var btn_auto_pop := Button.new()
+	btn_auto_pop.text = "Auto Vagas"
+	btn_auto_pop.add_theme_font_size_override("font_size", 10)
+	btn_auto_pop.pressed.connect(func():
+		var detected := get_detected_spawn_spots_count()
+		_cfg_spin_pop.value = max(1, detected)
+	)
+	pop_hbox.add_child(btn_auto_pop)
+	grid.add_child(pop_hbox)
+
+	# 2. Timeout de Inatividade
+	var lbl_idle := Label.new()
+	lbl_idle.text = "Timeout Parado (seg):"
+	lbl_idle.add_theme_font_size_override("font_size", 12)
+	grid.add_child(lbl_idle)
+
+	var idle_hbox := HBoxContainer.new()
+	idle_hbox.add_theme_constant_override("separation", 6)
+	_cfg_check_idle = CheckBox.new()
+	_cfg_check_idle.text = "Ativo"
+	_cfg_check_idle.button_pressed = true
+	idle_hbox.add_child(_cfg_check_idle)
+
+	_cfg_spin_idle = SpinBox.new()
+	_cfg_spin_idle.min_value = 1.0
+	_cfg_spin_idle.max_value = 20.0
+	_cfg_spin_idle.step = 0.5
+	_cfg_spin_idle.value = 3.0
+	idle_hbox.add_child(_cfg_spin_idle)
+	grid.add_child(idle_hbox)
+
+	# 3. Taxa de Mutação
+	var lbl_mut_rate := Label.new()
+	lbl_mut_rate.text = "Taxa de Mutação:"
+	lbl_mut_rate.add_theme_font_size_override("font_size", 12)
+	grid.add_child(lbl_mut_rate)
+
+	_cfg_spin_mut_rate = SpinBox.new()
+	_cfg_spin_mut_rate.min_value = 0.01
+	_cfg_spin_mut_rate.max_value = 0.50
+	_cfg_spin_mut_rate.step = 0.01
+	_cfg_spin_mut_rate.value = 0.05
+	grid.add_child(_cfg_spin_mut_rate)
+
+	# 4. Força da Mutação
+	var lbl_mut_pow := Label.new()
+	lbl_mut_pow.text = "Força da Mutação:"
+	lbl_mut_pow.add_theme_font_size_override("font_size", 12)
+	grid.add_child(lbl_mut_pow)
+
+	_cfg_spin_mut_power = SpinBox.new()
+	_cfg_spin_mut_power.min_value = 0.05
+	_cfg_spin_mut_power.max_value = 1.50
+	_cfg_spin_mut_power.step = 0.05
+	_cfg_spin_mut_power.value = 0.20
+	grid.add_child(_cfg_spin_mut_power)
+
+	# 5. Elitismo
+	var lbl_elite := Label.new()
+	lbl_elite.text = "Carros de Elite (Clonados):"
+	lbl_elite.add_theme_font_size_override("font_size", 12)
+	grid.add_child(lbl_elite)
+
+	_cfg_spin_elite = SpinBox.new()
+	_cfg_spin_elite.min_value = 1
+	_cfg_spin_elite.max_value = 5
+	_cfg_spin_elite.step = 1
+	_cfg_spin_elite.value = 1
+	grid.add_child(_cfg_spin_elite)
+
+	# 6. Velocidade Máxima
+	var lbl_speed := Label.new()
+	lbl_speed.text = "Velocidade Máxima:"
+	lbl_speed.add_theme_font_size_override("font_size", 12)
+	grid.add_child(lbl_speed)
+
+	_cfg_spin_speed = SpinBox.new()
+	_cfg_spin_speed.min_value = 100.0
+	_cfg_spin_speed.max_value = 600.0
+	_cfg_spin_speed.step = 10.0
+	_cfg_spin_speed.value = 300.0
+	grid.add_child(_cfg_spin_speed)
+
+	vbox.add_child(HSeparator.new())
+
+	# Botões de Ação
+	var actions_hbox := HBoxContainer.new()
+	actions_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(actions_hbox)
+
+	var btn_apply := Button.new()
+	btn_apply.text = "💾 Salvar Configurações"
+	btn_apply.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
+	btn_apply.pressed.connect(_apply_settings_from_modal)
+	actions_hbox.add_child(btn_apply)
+
+	var btn_defaults := Button.new()
+	btn_defaults.text = "🔄 Padrões"
+	btn_defaults.pressed.connect(_reset_settings_to_defaults)
+	actions_hbox.add_child(btn_defaults)
+
+	var btn_close := Button.new()
+	btn_close.text = "Fechar"
+	btn_close.pressed.connect(func(): _settings_modal.visible = false)
+	actions_hbox.add_child(btn_close)
+
+
+func _open_settings_modal() -> void:
+	if not _settings_modal:
+		return
+
+	var spots := get_detected_spawn_spots_count()
+	if spots > 0:
+		_cfg_lbl_spots.text = "🚦 %d vagas físicas detectadas (peças RoadStartPositions no traçado)" % spots
+		_cfg_lbl_spots.add_theme_color_override("font_color", Color(0.4, 1.0, 0.6))
+	else:
+		_cfg_lbl_spots.text = "⚠️ Nenhuma peça 'Grid de Posições' detectada. (Recomendado adicionar para largada realista)"
+		_cfg_lbl_spots.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))
+
+	_cfg_spin_pop.value = current_track_config.get("population_size", max(1, spots) if spots > 0 else 4)
+	_cfg_spin_idle.value = current_track_config.get("max_idle_time", 3.0)
+	_cfg_check_idle.button_pressed = current_track_config.get("enable_idle_timeout", true)
+	_cfg_spin_mut_rate.value = current_track_config.get("mutation_rate", 0.05)
+	_cfg_spin_mut_power.value = current_track_config.get("mutation_power", 0.20)
+	_cfg_spin_elite.value = current_track_config.get("elite_count", 1)
+	_cfg_spin_speed.value = current_track_config.get("max_speed", 300.0)
+
+	_settings_modal.visible = true
+
+
+func _apply_settings_from_modal() -> void:
+	current_track_config["population_size"] = int(_cfg_spin_pop.value)
+	current_track_config["max_idle_time"] = float(_cfg_spin_idle.value)
+	current_track_config["enable_idle_timeout"] = _cfg_check_idle.button_pressed
+	current_track_config["mutation_rate"] = float(_cfg_spin_mut_rate.value)
+	current_track_config["mutation_power"] = float(_cfg_spin_mut_power.value)
+	current_track_config["elite_count"] = int(_cfg_spin_elite.value)
+	current_track_config["max_speed"] = float(_cfg_spin_speed.value)
+
+	_settings_modal.visible = false
+	_show_toast("✅ Configurações da pista salvas!")
+
+
+func _reset_settings_to_defaults() -> void:
+	var spots := get_detected_spawn_spots_count()
+	_cfg_spin_pop.value = spots if spots > 0 else 4
+	_cfg_spin_idle.value = 3.0
+	_cfg_check_idle.button_pressed = true
+	_cfg_spin_mut_rate.value = 0.05
+	_cfg_spin_mut_power.value = 0.20
+	_cfg_spin_elite.value = 1
+	_cfg_spin_speed.value = 300.0
 
 
 func _list_available_tracks() -> Array:

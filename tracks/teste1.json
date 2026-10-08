@@ -282,5 +282,14 @@
 		"rotation_y_deg": 180.0
 	},
 	"track_id": "teste1",
-	"track_name": "Teste1"
+	"track_name": "Teste1",
+	"config": {
+		"population_size": 8,
+		"max_idle_time": 3.0,
+		"enable_idle_timeout": true,
+		"mutation_rate": 0.05,
+		"mutation_power": 0.2,
+		"elite_count": 1,
+		"max_speed": 300.0
+	}
 }

@@ -24,8 +24,9 @@ func _ready() -> void:
 
 
 func _get_track_id() -> String:
-	if AppState and AppState.current_track_id != "":
-		return AppState.current_track_id
+	var app_state: Node = get_node_or_null("/root/AppState")
+	if app_state and app_state.current_track_id != "":
+		return app_state.current_track_id
 	return "default_circuit"
 
 
