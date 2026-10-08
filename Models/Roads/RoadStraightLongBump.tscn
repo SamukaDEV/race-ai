@@ -1,8 +1,24 @@
 [gd_scene format=3 uid="uid://hua11ao4fjkl"]
 
 [ext_resource type="PackedScene" uid="uid://0nw0vmlrthns" path="res://Models/KenneyRacingKit/roadStraightLongBump.glb" id="1_afx7t"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_oj2ln"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1su8d"]
+material = ExtResource("2_oj2ln")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
+
+[sub_resource type="PrismMesh" id="PrismMesh_d2a8v"]
+material = ExtResource("2_oj2ln")
 
 [node name="roadStraightLongBump" unique_id=71701574 instance=ExtResource("1_afx7t")]
 
 [node name="roadStraightLongBump(Clone)" parent="." index="0" unique_id=1804304064]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
+
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="1" unique_id=1412108158]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.035096303, 0.20350444, -1.6845105)
+mesh = SubResource("BoxMesh_1su8d")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=1831130033]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_d2a8v")

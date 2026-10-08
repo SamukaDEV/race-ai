@@ -1,8 +1,24 @@
 [gd_scene format=3 uid="uid://d4ddd1t0rjpi1"]
 
 [ext_resource type="PackedScene" uid="uid://cxbdgwsexuiq0" path="res://Models/KenneyRacingKit/roadStraightSkew.glb" id="1_jaxnn"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_qcevp"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_3f6pv"]
+material = ExtResource("2_qcevp")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
+
+[sub_resource type="PrismMesh" id="PrismMesh_pcic4"]
+material = ExtResource("2_qcevp")
 
 [node name="roadStraightSkew" unique_id=983037682 instance=ExtResource("1_jaxnn")]
 
 [node name="roadStraightSkew(Clone)" parent="." index="0" unique_id=384496253]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="1" unique_id=204311533]
+transform = Transform3D(0.12990381, 0, -0.074999996, 0, 0.14999999, 0, 0.074999996, 0, 0.12990381, 0.3276075, 0.20350444, -1.2620676)
+mesh = SubResource("BoxMesh_3f6pv")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=425549173]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_pcic4")

@@ -1,8 +1,24 @@
 [gd_scene format=3 uid="uid://cvxxknw2ppxxi"]
 
 [ext_resource type="PackedScene" uid="uid://dys1ov30ul3k0" path="res://Models/KenneyRacingKit/roadStraightBridge.glb" id="1_ipj22"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_s54kt"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_iud2p"]
+material = ExtResource("2_s54kt")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
+
+[sub_resource type="PrismMesh" id="PrismMesh_l6rma"]
+material = ExtResource("2_s54kt")
 
 [node name="roadStraightBridge" unique_id=1622140240 instance=ExtResource("1_ipj22")]
 
 [node name="roadStraightBridge(Clone)" parent="." index="0" unique_id=1024893688]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="1" unique_id=553509834]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.035096303, 0.81471276, -0.59867954)
+mesh = SubResource("BoxMesh_iud2p")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=2072637314]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_l6rma")

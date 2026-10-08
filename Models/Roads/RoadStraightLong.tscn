@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bremrol2nbrmg"]
 
 [ext_resource type="PackedScene" uid="uid://2q5qgjtrdytf" path="res://Models/KenneyRacingKit/roadStraightLong.glb" id="1_ma8s2"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_1oxu4"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_j2lt7"]
 size = Vector3(0.1568451, 0.49023438, 1.9934082)
@@ -8,11 +9,12 @@ size = Vector3(0.1568451, 0.49023438, 1.9934082)
 [sub_resource type="BoxShape3D" id="BoxShape3D_1oxu4"]
 size = Vector3(0.1568451, 0.49023438, 1.9934082)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j2lt7"]
-albedo_color = Color(1, 0.58431375, 1, 1)
+[sub_resource type="BoxMesh" id="BoxMesh_g25e0"]
+material = ExtResource("2_1oxu4")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
 
-[sub_resource type="SphereMesh" id="SphereMesh_1oxu4"]
-material = SubResource("StandardMaterial3D_j2lt7")
+[sub_resource type="PrismMesh" id="PrismMesh_ncooe"]
+material = ExtResource("2_1oxu4")
 
 [node name="roadStraightLong" unique_id=1478282026 instance=ExtResource("1_ma8s2")]
 
@@ -29,6 +31,10 @@ shape = SubResource("BoxShape3D_j2lt7")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92115676, 0.12207031, -1.0030518)
 shape = SubResource("BoxShape3D_1oxu4")
 
-[node name="HAS_COLISION" type="MeshInstance3D" parent="." index="2" unique_id=857448379]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0, 0.26311576, 0)
-mesh = SubResource("SphereMesh_1oxu4")
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="2" unique_id=160354994]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.035096303, 0.20350444, -1.6845105)
+mesh = SubResource("BoxMesh_g25e0")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=1041506435]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_ncooe")
