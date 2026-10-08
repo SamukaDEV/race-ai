@@ -29,6 +29,8 @@ func _ready() -> void:
 	
 	start_generation()
 
+@export var track_path: NodePath = ^"../Track"
+
 func start_generation() -> void:
 	current_max_laps = 0
 	for car in cars:
@@ -37,25 +39,31 @@ func start_generation() -> void:
 	
 	cars.clear()
 	
+	var spawn_transform := Transform3D(Basis(), Vector3(0.35, 0.05, 0.25))
+	if has_node(track_path):
+		var track_mgr: TrackManager = get_node(track_path) as TrackManager
+		if track_mgr:
+			spawn_transform = track_mgr.get_spawn_transform()
+
 	var car_index: int = 0
 	for genome in population.genomes:
 		var car: RaceCar = car_scene.instantiate()
-		
 		car.name = "car_" + str(car_index)
 		add_child(car)
 		
-		car.global_position = Vector3(0.35, 0.05, 0.25)
-		car.rotation = Vector3.ZERO
+		# Grid de largada em duas filas alinhado à orientação da pista
+		var row: int = int(car_index / 2)
+		var lateral_side: float = 0.15 if (car_index % 2 == 0) else -0.15
+		var longitudinal: float = -row * (car.get_car_length() + 0.35)
+
+		var pos: Vector3 = spawn_transform.origin \
+			+ (spawn_transform.basis.x * lateral_side) \
+			+ (spawn_transform.basis.z * longitudinal)
 		
-		# Posicionar o carro no lugar correto
-		
-		var d: float = (car_index * (car.get_car_length() + 0.3))
-		if start_position:
-			car.global_position.z = d
+		car.global_position = pos
+		car.global_rotation = spawn_transform.basis.get_euler()
 		car.random_car_color()
 		car.set_car_text("i: " + str(car_index))
-		if car_index % 2 == 0:
-			car.global_position.x += 0.3
 		
 		car.setup(genome)
 		car.lap_completed.connect(_on_car_lap_completed)

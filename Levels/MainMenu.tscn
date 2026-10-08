@@ -1,0 +1,210 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/MainMenu.gd" id="1_mainmenu"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.06, 0.08, 0.13, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.22, 0.35, 0.8)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 28.0
+content_margin_top = 24.0
+content_margin_right = 28.0
+content_margin_bottom = 24.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal"]
+bg_color = Color(0.07, 0.09, 0.15, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.0, 0.8, 1.0, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mainmenu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.055, 0.085, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="CenterContainer/MainPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.0, 0.9, 1.0, 1)
+theme_override_font_sizes/font_size = 28
+text = "🏁 RACE-AI"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterContainer/MainPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "Simulação de Corrida com Neuroevolução 3D"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/MainPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="BtnSimulation" type="Button" parent="CenterContainer/MainPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "🏎️  Iniciar Simulação"
+
+[node name="BtnEditor" type="Button" parent="CenterContainer/MainPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "🛠️  Editor de Pistas"
+
+[node name="BtnSettings" type="Button" parent="CenterContainer/MainPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "⚙️  Configurações"
+
+[node name="BtnQuit" type="Button" parent="CenterContainer/MainPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "❌  Sair do Jogo"
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/MainPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Footer" type="Label" parent="CenterContainer/MainPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 1)
+theme_override_font_sizes/font_size = 10
+text = "Godot Engine 4.7 • Jolt Physics 3D"
+horizontal_alignment = 1
+
+[node name="TrackSelectModal" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(400, 320)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -160.0
+offset_right = 200.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TrackSelectModal"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ModalTitle" type="Label" parent="TrackSelectModal/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.0, 0.9, 1.0, 1)
+theme_override_font_sizes/font_size = 16
+text = "🏁 SELECIONE O CIRCUITO"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TrackSelectModal/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TrackListVBox" type="VBoxContainer" parent="TrackSelectModal/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="BtnCloseTrackModal" type="Button" parent="TrackSelectModal/VBoxContainer"]
+layout_mode = 2
+text = "Voltar"
+
+[node name="SettingsModal" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(400, 260)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -130.0
+offset_right = 200.0
+offset_bottom = 130.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsModal"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SettingsTitle" type="Label" parent="SettingsModal/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.0, 0.9, 1.0, 1)
+theme_override_font_sizes/font_size = 16
+text = "⚙️ CONFIGURAÇÕES DA SIMULAÇÃO"
+horizontal_alignment = 1
+
+[node name="Info" type="Label" parent="SettingsModal/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "Módulo de Edição de Sensores e Redes Neurais pronto para expansões futuras (Camadas, População, etc.)."
+autowrap_mode = 2
+
+[node name="BtnCloseSettings" type="Button" parent="SettingsModal/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 10
+text = "Fechar"
+
+[connection signal="pressed" from="CenterContainer/MainPanel/VBoxContainer/BtnSimulation" to="." method="_on_btn_simulation_pressed"]
+[connection signal="pressed" from="CenterContainer/MainPanel/VBoxContainer/BtnEditor" to="." method="_on_btn_editor_pressed"]
+[connection signal="pressed" from="CenterContainer/MainPanel/VBoxContainer/BtnSettings" to="." method="_on_btn_settings_pressed"]
+[connection signal="pressed" from="CenterContainer/MainPanel/VBoxContainer/BtnQuit" to="." method="_on_btn_quit_pressed"]
+[connection signal="pressed" from="TrackSelectModal/VBoxContainer/BtnCloseTrackModal" to="." method="_on_close_track_modal_pressed"]
+[connection signal="pressed" from="SettingsModal/VBoxContainer/BtnCloseSettings" to="." method="_on_close_settings_modal_pressed"]

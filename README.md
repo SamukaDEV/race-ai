@@ -16,10 +16,12 @@ Através de **Neuroevolução**, cada veículo possui sua própria rede neural a
 
 * 🧠 **Redes Neurais Multicamadas (MLP)**: Topologia $7 \rightarrow 16 \rightarrow 16 \rightarrow 2$ com função de ativação $\tanh$.
 * 🧬 **Algoritmo Genético Robusto**: Genomas com 434 parâmetros de precisão `float32`, seleção natural, elitismo e mutação gaussiana.
-* 📡 **Sensores Raycast com Debug Visual**: 5 feixes de proximidade por veículo com alternância global de depuração visual via tecla `F3`.
+* 🛠️ **Editor 3D de Pistas Integrado (`TrackEditor`)**: Crie circuitos personalizados em tempo real com snap de grade ($1.0\text{m}$), rotação angular, preview fantasma translúcido, checkpoints automáticos e teste imediato na simulação.
+* 🏠 **Menu Principal & Seletor de Circuitos**: Seleção visual de pistas pré-fabricadas (`res://tracks/`) e pistas criadas pelo usuário (`user://tracks/`).
+* 📡 **Sensores Raycast Otimizados**: 5 feixes de proximidade por veículo filtrados na camada física do circuito (não colidem entre si) com alternância visual via tecla `F3`.
 * 📷 **Câmera Livre Configurável (`FreeCamera`)**: Navegação fluida em 3D ou planar horizontal com controles familiares (`WASD`, `Shift`, `Espaço`), rotação por mouse e ajuste de velocidade dinâmico por scroll.
 * 🏁 **Contagem de Voltas (LAPs) & HUD em Tempo Real**: Telemetria na tela com voltas do líder, recorde histórico da sessão, status dos carros e setores/checkpoints validados.
-* 💾 **Exportação e Importação (Save & Load)**: Salve o progresso genético, recordes e posição da câmera com `F5` / `F6`, além de exportar modelos individuais do piloto campeão (`best_pilot.json`).
+* 💾 **Saves Isolados por Pista**: Sistema inteligente que particiona os saves genéticos (`user://saves/<track_id>/`), impedindo que o aprendizado de uma pista sobrescreva o de outra com geometria diferente.
 * ⚡ **Motor Físico Jolt 3D**: Simulação física de alta estabilidade e desempenho integrada ao Godot 4.
 
 ---
@@ -35,12 +37,22 @@ Através de **Neuroevolução**, cada veículo possui sua própria rede neural a
 | **Ajustar Velocidade** | `Scroll da Roda` | Rolar para cima aumenta a velocidade; para baixo diminui |
 | **Turbo** | `Ctrl` | Multiplica a velocidade de deslocamento (2.5x) |
 
+### Editor 3D de Pistas (`TrackEditor`)
+| Comando | Tecla / Ação | Função |
+| :--- | :--- | :--- |
+| **Posicionar Peça** | `Botão Esquerdo` | Instancia a peça modular selecionada na coordenada da grade |
+| **Remover Peça** | `Botão Direito` | Remove a peça sob o cursor do mouse |
+| **Rotacionar Peça** | `R` | Gira a orientação da peça em $90^\circ$ |
+| **Alternar Catálogo** | Botões da Barra Inferior | Escolhe entre retas, curvas, largada, lombada ou cruzamento |
+| **Testar Circuito** | Botão "▶ Testar Pista" | Transfere a pista montada diretamente para a simulação de IA |
+
 ### Simulação e Persistência
 | Comando | Tecla / Botão | Função |
 | :--- | :--- | :--- |
-| **Salvar Estado Rápido** | `F5` ou Botão no HUD | Salva a geração atual, todos os genomas e posição da câmera |
-| **Carregar Estado Rápido** | `F6` ou Botão no HUD | Restaura imediatamente a simulação e a câmera |
+| **Salvar Estado Rápido** | `F5` ou Botão no HUD | Salva no diretório específico da pista (`user://saves/<track_id>/`) |
+| **Carregar Estado Rápido** | `F6` ou Botão no HUD | Restaura imediatamente a simulação e a câmera da pista ativa |
 | **Depuração de Sensores** | `F3` | Liga ou desliga as linhas visuais dos sensores de todos os carros em tempo real |
+| **Voltar ao Menu** | Botão `🏠 Menu` | Retorna para a tela de seleção de pistas |
 
 ---
 
@@ -48,12 +60,13 @@ Através de **Neuroevolução**, cada veículo possui sua própria rede neural a
 
 Para detalhes arquiteturais aprofundados, consulte os documentos dedicados na pasta `docs/`:
 
+* 🛠️ [**Editor de Pistas & Menu Principal**](docs/track_editor.md): Arquitetura do editor, catálogo modular, serialização JSON e ciclo de vida.
+* 💾 [**Sistema de Save & Load Particionado**](docs/save_load_system.md): Persistência por circuito de genomas, geração, câmera e modelos campeões.
 * 📖 [**Visão Geral do Projeto**](docs/project_overview.md): Fluxo completo de simulação e conceitos de neuroevolução.
-* 💾 [**Sistema de Save & Load**](docs/save_load_system.md): Persistência em JSON de genomas, câmera e modelos de pilotos.
 * 📷 [**Guia da Câmera Livre (`FreeCamera`)**](docs/free_camera.md): Modos de operação, propriedades do Inspector e boas práticas.
 * 🧬 [**Genomas e Algoritmo Genético**](docs/genomes_evolution.md): Representação de 434 genes, elitismo, mutação e reprodução.
 * 🧠 [**Rede Neural Artificial**](docs/neural_network.md): Topologia de camadas, ativação $\tanh$, normalização de entradas e saídas de controle.
-* 🚗 [**Veículos e Sensores**](docs/car_sensors.md): Física do carro, ângulos dos feixes de raycast e renderização de depuração.
+* 🚗 [**Veículos e Sensores**](docs/car_sensors.md): Física do carro, isolamento de camadas físicas e renderização de depuração.
 * 📁 [**Estrutura de Pastas**](docs/project_structure.md): Descrição detalhada da organização de pastas e arquivos.
 
 ---
@@ -75,16 +88,23 @@ Para detalhes arquiteturais aprofundados, consulte os documentos dedicados na pa
 		• 📂 Crowd/ (Arquibancadas, pessoas, tendas)
 		• 📂 Marketing/ (Banners, estandes, outdoors, torres)
 • 📂 Levels/
+	• MainMenu.tscn (Menu principal com seleção de circuitos)
 	• MainScene.tscn (Cena principal de execução da simulação)
+	• TrackEditor.tscn (Editor 3D de pistas modulares)
 • 📂 Models/ (Cenas modulares empacotadas .tscn e materiais .tres)
 • 📂 Scripts/
 	• 📂 Car/ (Car.gd e Sensors.gd)
 	• 📂 Evolution/ (Population.gd, Evolution.gd e Fitness.gd)
+	• 📂 Global/ (AppState.gd - singleton de gerenciamento)
 	• 📂 Neural/ (NeuralNetwork.gd, Layer.gd e Genome.gd)
-	• 📂 Simulation/ (Simulation.gd)
+	• 📂 Simulation/ (Simulation.gd e SaveManager.gd)
+	• 📂 Track/ (Track.gd e TrackCatalog.gd)
+	• 📂 TrackEditor/ (TrackEditor.gd)
+	• 📂 UI/ (MainMenu.gd e HUD.gd)
 	• FreeCamera.gd (Câmera livre 3D configurável)
 	• main.gd (Ponto de entrada da aplicação)
-• 📂 docs/ (Documentação técnica em Markdown)
+• 📂 tracks/ (Circuitos em formato JSON)
+• 📂 docs/ (Documentação técnica detalhada em Markdown)
 ```
 
 ---
@@ -93,5 +113,6 @@ Para detalhes arquiteturais aprofundados, consulte os documentos dedicados na pa
 
 1. Abra o **Godot Engine 4** (versão 4.2+ recomendada).
 2. Importe o diretório do projeto `race-ai/`.
-3. Pressione **F5** (ou clique no botão **Play**) para iniciar a simulação principal (`Levels/MainScene.tscn`).
-4. Utilize o mouse e as teclas `WASD`, `Shift` e `Espaço` para navegar com a câmera livre e pressione `F3` para inspecionar os sensores da inteligência artificial em ação.
+3. Pressione **F5** (ou clique no botão **Play**) para abrir o **Menu Principal** (`Levels/MainMenu.tscn`).
+4. Selecione **Iniciar Simulação** para treinar a IA na pista oficial ou em pistas criadas, ou clique em **Editor de Pistas** para criar e testar seu próprio traçado 3D!
+5. Durante a simulação, utilize o mouse e as teclas `WASD`, `Shift` e `Espaço` para navegar com a câmera livre e pressione `F3` para inspecionar os sensores da inteligência artificial em ação.

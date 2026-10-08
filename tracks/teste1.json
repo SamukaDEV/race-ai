@@ -1,0 +1,286 @@
+{
+	"checkpoints": [
+		{
+			"name": "Sector_1",
+			"position": [
+				-2.0,
+				0.5,
+				8.5
+			],
+			"size": [
+				3.0,
+				2.0,
+				3.0
+			]
+		},
+		{
+			"name": "Sector_2",
+			"position": [
+				-9.0,
+				0.5,
+				17.0
+			],
+			"size": [
+				3.0,
+				2.0,
+				3.0
+			]
+		},
+		{
+			"name": "Sector_3",
+			"position": [
+				-16.0,
+				0.5,
+				8.5
+			],
+			"size": [
+				3.0,
+				2.0,
+				3.0
+			]
+		},
+		{
+			"name": "FinishLine",
+			"position": [
+				-5.0,
+				0.5,
+				11.0
+			],
+			"size": [
+				3.5,
+				2.0,
+				2.0
+			]
+		}
+	],
+	"created_at": "2026-10-08T15:27:28",
+	"grid_size": 1.0,
+	"pieces": [
+		{
+			"piece_id": "RoadStart",
+			"position": [
+				-6.0,
+				0.0,
+				11.0
+			],
+			"rotation_y_deg": 0.0
+		},
+		{
+			"piece_id": "RoadStraight",
+			"position": [
+				-6.0,
+				0.0,
+				9.0
+			],
+			"rotation_y_deg": 0.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-6.0,
+				0.0,
+				8.0
+			],
+			"rotation_y_deg": 0.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-2.0,
+				0.0,
+				5.0
+			],
+			"rotation_y_deg": 180.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-4.0,
+				0.0,
+				3.0
+			],
+			"rotation_y_deg": 270.0
+		},
+		{
+			"piece_id": "RoadStraightLong",
+			"position": [
+				-4.0,
+				0.0,
+				4.0
+			],
+			"rotation_y_deg": 90.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-6.0,
+				0.0,
+				4.0
+			],
+			"rotation_y_deg": 90.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-9.0,
+				0.0,
+				0.0
+			],
+			"rotation_y_deg": 270.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-11.0,
+				0.0,
+				2.0
+			],
+			"rotation_y_deg": 0.0
+		},
+		{
+			"piece_id": "RoadCornerLarger",
+			"position": [
+				-10.0,
+				0.0,
+				2.0
+			],
+			"rotation_y_deg": 180.0
+		},
+		{
+			"piece_id": "RoadCornerLarger",
+			"position": [
+				-16.0,
+				0.0,
+				7.0
+			],
+			"rotation_y_deg": 0.0
+		},
+		{
+			"piece_id": "RoadCornerLarger",
+			"position": [
+				-13.0,
+				0.0,
+				10.0
+			],
+			"rotation_y_deg": 90.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-13.0,
+				0.0,
+				9.0
+			],
+			"rotation_y_deg": 270.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-11.0,
+				0.0,
+				11.0
+			],
+			"rotation_y_deg": 180.0
+		},
+		{
+			"piece_id": "RoadStraight",
+			"position": [
+				-14.0,
+				0.0,
+				12.0
+			],
+			"rotation_y_deg": 270.0
+		},
+		{
+			"piece_id": "RoadCornerSmall",
+			"position": [
+				-15.0,
+				0.0,
+				13.0
+			],
+			"rotation_y_deg": 0.0
+		},
+		{
+			"piece_id": "RoadCornerSmall",
+			"position": [
+				-14.0,
+				0.0,
+				14.0
+			],
+			"rotation_y_deg": 90.0
+		},
+		{
+			"piece_id": "RoadStraightLong",
+			"position": [
+				-12.0,
+				0.0,
+				14.0
+			],
+			"rotation_y_deg": 90.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-12.0,
+				0.0,
+				13.0
+			],
+			"rotation_y_deg": 270.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-9.0,
+				0.0,
+				17.0
+			],
+			"rotation_y_deg": 90.0
+		},
+		{
+			"piece_id": "RoadStraightLong",
+			"position": [
+				-7.0,
+				0.0,
+				17.0
+			],
+			"rotation_y_deg": 90.0
+		},
+		{
+			"piece_id": "RoadCornerLarge",
+			"position": [
+				-5.0,
+				0.0,
+				15.0
+			],
+			"rotation_y_deg": 180.0
+		},
+		{
+			"piece_id": "RoadStartPositions",
+			"position": [
+				-5.0,
+				0.0,
+				13.0
+			],
+			"rotation_y_deg": 180.0
+		},
+		{
+			"piece_id": "RoadStartPositions",
+			"position": [
+				-5.0,
+				0.0,
+				11.0
+			],
+			"rotation_y_deg": 180.0
+		}
+	],
+	"spawn_point": {
+		"position": [
+			-5.0,
+			0.300000011920929,
+			11.0
+		],
+		"rotation_y_deg": 180.0
+	},
+	"track_id": "teste1",
+	"track_name": "Teste1"
+}

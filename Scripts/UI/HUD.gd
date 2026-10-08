@@ -74,9 +74,10 @@ func _build_ui() -> void:
 	panel.add_child(root_vbox)
 
 	# --- CABEÇALHO ---
+	var track_display_name := AppState.current_track_name if AppState else "Circuito Padrão"
 	var header := Label.new()
-	header.text = "🏁 RACE-AI TELEMETRY"
-	header.add_theme_font_size_override("font_size", 15)
+	header.text = "🏁 %s" % track_display_name.to_upper()
+	header.add_theme_font_size_override("font_size", 14)
 	header.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
 	root_vbox.add_child(header)
 
@@ -154,11 +155,23 @@ func _build_ui() -> void:
 	btn_load.pressed.connect(_on_load_pressed)
 	actions_box.add_child(btn_load)
 
+	var actions_row2 := HBoxContainer.new()
+	actions_row2.add_theme_constant_override("separation", 6)
+	root_vbox.add_child(actions_row2)
+
 	var btn_export_best := Button.new()
-	btn_export_best.text = "⭐ Exportar Campeão"
+	btn_export_best.text = "⭐ Campeão"
 	btn_export_best.tooltip_text = "Salva o genoma do piloto com maior pontuação em arquivo individual"
+	btn_export_best.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_export_best.pressed.connect(_on_export_best_pressed)
-	root_vbox.add_child(btn_export_best)
+	actions_row2.add_child(btn_export_best)
+
+	var btn_menu := Button.new()
+	btn_menu.text = "🏠 Menu"
+	btn_menu.tooltip_text = "Retorna ao Menu Principal"
+	btn_menu.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_menu.pressed.connect(func(): get_tree().change_scene_to_file("res://Levels/MainMenu.tscn"))
+	actions_row2.add_child(btn_menu)
 
 	var separator4 := HSeparator.new()
 	root_vbox.add_child(separator4)

@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="race-ai"
-run/main_scene="uid://c4rols6v2oaee"
+run/main_scene="res://Levels/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+AppState="*res://Scripts/Global/AppState.gd"
 
 [display]
 
