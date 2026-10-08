@@ -11,6 +11,7 @@ var population: Population
 var cars: Array[RaceCar] = []
 var current_max_laps: int = 0
 var all_time_max_laps: int = 0
+var _is_transitioning: bool = false
 
 func _ready() -> void:
 	randomize()
@@ -69,7 +70,7 @@ func _on_car_lap_completed(car: RaceCar, lap_count: int) -> void:
 	print("🏁 LAP! %s completou a volta %d (Recorde da Sessão: %d)" % [car.name, lap_count, all_time_max_laps])
 
 func _physics_process(_delta: float) -> void:
-	if cars.is_empty():
+	if _is_transitioning or cars.is_empty():
 		return
 	
 	var all_dead := true
@@ -87,6 +88,10 @@ func _physics_process(_delta: float) -> void:
 		finish_generation()
 
 func finish_generation() -> void:
+	if _is_transitioning:
+		return
+	_is_transitioning = true
+	
 	for car in cars:
 		if is_instance_valid(car):
 			car.die()
@@ -104,3 +109,4 @@ func finish_generation() -> void:
 	await get_tree().create_timer(0.5).timeout
 	
 	start_generation()
+	_is_transitioning = false

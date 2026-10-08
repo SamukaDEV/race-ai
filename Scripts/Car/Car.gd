@@ -9,7 +9,7 @@ extends CharacterBody3D
 @export_group("Inatividade / Timeout")
 @export var enable_idle_timeout: bool = true
 @export var max_idle_time: float = 3.0 ## Tempo máximo (segundos) que o carro pode ficar parado antes de ser eliminado
-@export var min_moving_speed: float = 2.0 ## Velocidade mínima para reiniciar o contador de inatividade
+@export var min_moving_speed: float = 1.0 ## Velocidade mínima para reiniciar o contador de inatividade
 
 @onready var sensors: CarSensors = $Sensors
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
