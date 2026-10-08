@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dvp7uoghix3sl"]
 
 [ext_resource type="PackedScene" uid="uid://k80osuptrvk4" path="res://Models/KenneyRacingKit/roadStartPositions.glb" id="1_3eo1t"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_r63gr"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_vwu1n"]
 size = Vector3(0.1568451, 0.49023438, 1.9934082)
@@ -8,11 +9,12 @@ size = Vector3(0.1568451, 0.49023438, 1.9934082)
 [sub_resource type="BoxShape3D" id="BoxShape3D_v4pr5"]
 size = Vector3(0.1568451, 0.49023438, 1.9934082)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qd2g5"]
-albedo_color = Color(1, 0.58431375, 1, 1)
+[sub_resource type="BoxMesh" id="BoxMesh_e82eg"]
+material = ExtResource("2_r63gr")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
 
-[sub_resource type="SphereMesh" id="SphereMesh_vwu1n"]
-material = SubResource("StandardMaterial3D_qd2g5")
+[sub_resource type="PrismMesh" id="PrismMesh_aficr"]
+material = ExtResource("2_r63gr")
 
 [node name="roadStartPositions" unique_id=439339537 instance=ExtResource("1_3eo1t")]
 
@@ -29,6 +31,24 @@ shape = SubResource("BoxShape3D_vwu1n")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92115676, 0.12207031, -1.0030518)
 shape = SubResource("BoxShape3D_v4pr5")
 
-[node name="HAS_COLISION" type="MeshInstance3D" parent="." index="2" unique_id=1935293073]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0, 0.26311576, 0)
-mesh = SubResource("SphereMesh_vwu1n")
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="2" unique_id=1935293073]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.035096303, 0.20350444, -1.6845105)
+mesh = SubResource("BoxMesh_e82eg")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=616001643]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_aficr")
+
+[node name="SpawnPoints" type="Node3D" parent="." index="3" unique_id=1423118311]
+
+[node name="Spawn1" type="Marker3D" parent="SpawnPoints" index="0" unique_id=563368111]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.325, 0.17, -0.4)
+
+[node name="Spawn2" type="Marker3D" parent="SpawnPoints" index="1" unique_id=1331002626]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.675, 0.17, -0.906)
+
+[node name="Spawn3" type="Marker3D" parent="SpawnPoints" index="2" unique_id=995119809]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.324, 0.17, -1.4)
+
+[node name="Spawn4" type="Marker3D" parent="SpawnPoints" index="3" unique_id=202537375]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.675, 0.17, -1.906)

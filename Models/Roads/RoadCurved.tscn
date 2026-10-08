@@ -1,8 +1,24 @@
 [gd_scene format=3 uid="uid://6uy32qmf6u8"]
 
 [ext_resource type="PackedScene" uid="uid://cjri6qfy5p023" path="res://Models/KenneyRacingKit/roadCurved.glb" id="1_un6w6"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_wp6ci"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_4yki8"]
+material = ExtResource("2_wp6ci")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
+
+[sub_resource type="PrismMesh" id="PrismMesh_dpk68"]
+material = ExtResource("2_wp6ci")
 
 [node name="roadCurved" unique_id=1828161106 instance=ExtResource("1_un6w6")]
 
 [node name="roadCurved(Clone)" parent="." index="0" unique_id=770011070]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="1" unique_id=846187182]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.8042233, 0.20350444, -1.3188138)
+mesh = SubResource("BoxMesh_4yki8")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=123319397]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_dpk68")

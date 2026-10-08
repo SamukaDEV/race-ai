@@ -1,8 +1,24 @@
 [gd_scene format=3 uid="uid://cd0gc5v4amqtb"]
 
 [ext_resource type="PackedScene" uid="uid://cowownwxgneh0" path="res://Models/KenneyRacingKit/roadSplitSmall.glb" id="1_yrvgq"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_0rx4s"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_fm03t"]
+material = ExtResource("2_0rx4s")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
+
+[sub_resource type="PrismMesh" id="PrismMesh_7ci02"]
+material = ExtResource("2_0rx4s")
 
 [node name="roadSplitSmall" unique_id=932417730 instance=ExtResource("1_yrvgq")]
 
 [node name="roadSplitSmall(Clone)" parent="." index="0" unique_id=1414625066]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="1" unique_id=821676801]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.035096303, 0.20350444, -1.6845105)
+mesh = SubResource("BoxMesh_fm03t")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=544526240]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_7ci02")

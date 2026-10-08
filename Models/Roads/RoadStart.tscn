@@ -1,12 +1,20 @@
 [gd_scene format=3 uid="uid://b7h1mhay3sii1"]
 
 [ext_resource type="PackedScene" uid="uid://dbcakj2u64043" path="res://Models/KenneyRacingKit/roadStart.glb" id="1_ptnqn"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_mhi6v"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5aekg"]
 size = Vector3(0.1568451, 0.49023438, 1.9934082)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mhi6v"]
 size = Vector3(0.1568451, 0.49023438, 1.9934082)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sosto"]
+material = ExtResource("2_mhi6v")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
+
+[sub_resource type="PrismMesh" id="PrismMesh_tnoq0"]
+material = ExtResource("2_mhi6v")
 
 [node name="roadStart" unique_id=1208418997 instance=ExtResource("1_ptnqn")]
 
@@ -22,3 +30,11 @@ shape = SubResource("BoxShape3D_5aekg")
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" index="1" unique_id=512950120]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92115676, 0.12207031, -1.0030518)
 shape = SubResource("BoxShape3D_mhi6v")
+
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="2" unique_id=381937331]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.035096303, 0.85361063, -1.6845105)
+mesh = SubResource("BoxMesh_sosto")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=357113549]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_tnoq0")

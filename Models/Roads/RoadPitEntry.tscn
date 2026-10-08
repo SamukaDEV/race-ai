@@ -1,8 +1,24 @@
 [gd_scene format=3 uid="uid://cre84sljov56l"]
 
 [ext_resource type="PackedScene" uid="uid://badyqk2l6dein" path="res://Models/KenneyRacingKit/roadPitEntry.glb" id="1_nsvsf"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_fl76s"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_yb1xu"]
+material = ExtResource("2_fl76s")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
+
+[sub_resource type="PrismMesh" id="PrismMesh_c2loh"]
+material = ExtResource("2_fl76s")
 
 [node name="roadPitEntry" unique_id=1998454707 instance=ExtResource("1_nsvsf")]
 
 [node name="roadPitEntry(Clone)" parent="." index="0" unique_id=1341607753]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="1" unique_id=1458894798]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, -0.035096303, 0.20350444, -1.6845105)
+mesh = SubResource("BoxMesh_yb1xu")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=1088086576]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_c2loh")

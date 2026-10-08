@@ -1,8 +1,24 @@
 [gd_scene format=3 uid="uid://4nb064r1dx4l"]
 
 [ext_resource type="PackedScene" uid="uid://b7sjnoj84h760" path="res://Models/KenneyRacingKit/roadCornerBridgeSmall.glb" id="1_nk15o"]
+[ext_resource type="Material" uid="uid://ddfa1bff7235r" path="res://Materials/colision_object_material.tres" id="2_2q523"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_p40oq"]
+material = ExtResource("2_2q523")
+size = Vector3(0.5291748, 0.3486328, 2.7120361)
+
+[sub_resource type="PrismMesh" id="PrismMesh_88a7p"]
+material = ExtResource("2_2q523")
 
 [node name="roadCornerBridgeSmall" unique_id=938365019 instance=ExtResource("1_nk15o")]
 
 [node name="roadCornerBridgeSmall(Clone)" parent="." index="0" unique_id=1166986624]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="ROAD_DIRECTION_INDICATOR" type="MeshInstance3D" parent="." index="1" unique_id=2035316848]
+transform = Transform3D(0.10806421, 0, -0.10402944, 0, 0.14999999, 0, 0.10402944, 0, 0.10806421, 0.19105993, 0.20350444, -0.78841966)
+mesh = SubResource("BoxMesh_p40oq")
+
+[node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=370970799]
+transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
+mesh = SubResource("PrismMesh_88a7p")
