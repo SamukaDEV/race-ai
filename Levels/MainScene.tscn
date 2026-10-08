@@ -177,4 +177,4 @@ car_scene = ExtResource("7_lljjv")
 metadata/_custom_type_script = "uid://bpynhobgwfy1h"
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1359844354]
-transform = Transform3D(0.078459084, 0.39112768, -0.916986, 0, 0.9198215, 0.39233714, 0.9969173, -0.030782413, 0.07216835, -3.2999992, 2, 3.2999997)
+transform = Transform3D(0.075785674, 0.13973291, -0.98728484, 0.020306721, 0.9897107, 0.14163505, 0.99691737, -0.030782424, 0.07216838, -1.2999992, 0.50062966, 2.2999997)

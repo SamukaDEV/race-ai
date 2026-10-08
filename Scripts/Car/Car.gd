@@ -75,7 +75,7 @@ func apply_controls(gas: float, steer: float, delta: float) -> void:
 	
 	# Movimento
 	
-	var forward: Vector3 = -global_transform.basis.z
+	var forward: Vector3 = global_transform.basis.z
 	
 	velocity.x = forward.x * speed_value
 	velocity.z = forward.z * speed_value

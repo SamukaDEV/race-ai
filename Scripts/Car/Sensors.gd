@@ -7,10 +7,12 @@ extends Node3D
 ## Flag global: ao pressionar a tecla F3, liga/desliga para todos os carros em tempo real
 static var global_debug: bool = true
 
-@export var sensor_offset := Vector3(0.0, 0.3, -1.5)
+#@export var sensor_offset := Vector3(0.0, 0.3, -1.5)
+#@export var sensor_offset := Vector3(0.0, 0.05, -0.13)
+@export var sensor_offset := Vector3(0.0, 0.05, 0.15)
 
 const SENSOR_COUNT: int = 5
-const MAX_DISTANCE: float = 0.45
+const MAX_DISTANCE: float = 0.2
 
 var sensor_angles: Array = [
 	deg_to_rad(-45.0),
@@ -81,7 +83,7 @@ func cast_sensor(angle: float) -> float:
 	
 	# IMPORTANTE: Multiplicar pela orientação (basis) do carro para que os raios
 	# acompanhem a rotação do veículo nas curvas
-	var direction: Vector3 = (global_transform.basis * local_direction).normalized()
+	var direction: Vector3 = -(global_transform.basis * local_direction).normalized()
 	
 	var start: Vector3 = global_transform * sensor_offset
 	var end: Vector3 = start + direction * MAX_DISTANCE
