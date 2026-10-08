@@ -47,3 +47,32 @@ func create_next_generation() -> void:
 func get_best_genome() -> Genome:
 	sort_by_fitness()
 	return genomes[0]
+
+## Serializa a população para salvar em arquivo
+func to_dict() -> Dictionary:
+	var genomes_data: Array = []
+	for g in genomes:
+		genomes_data.append(g.to_dict())
+	
+	return {
+		"generation": generation,
+		"population_size": population_size,
+		"genomes": genomes_data
+	}
+
+## Restaura a população a partir de dados importados
+func load_from_dict(data: Dictionary) -> void:
+	generation = int(data.get("generation", 0))
+	population_size = int(data.get("population_size", population_size))
+	genomes.clear()
+	
+	var raw_genomes: Array = data.get("genomes", [])
+	for g_data in raw_genomes:
+		if g_data is Dictionary:
+			genomes.append(Genome.from_dict(g_data))
+	
+	# Se a lista estiver menor que a população esperada, preenche o restante
+	while genomes.size() < population_size:
+		var new_g := Genome.new()
+		new_g.randomize()
+		genomes.append(new_g)

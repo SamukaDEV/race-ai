@@ -36,3 +36,21 @@ func crossover(other: Genome) -> Genome:
 			child.genes[i] = other.genes[i]
 	
 	return child
+
+## Serializa o genoma para um dicionário compatível com JSON
+func to_dict() -> Dictionary:
+	return {
+		"fitness": fitness,
+		"genes": Array(genes)
+	}
+
+## Reconstrói o genoma a partir de um dicionário
+static func from_dict(data: Dictionary) -> Genome:
+	var genome := Genome.new()
+	genome.fitness = float(data.get("fitness", 0.0))
+	var raw_genes: Array = data.get("genes", [])
+	if raw_genes.size() == GENE_COUNT:
+		genome.genes = PackedFloat32Array(raw_genes)
+	else:
+		genome.randomize()
+	return genome

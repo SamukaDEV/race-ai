@@ -14,6 +14,7 @@
 [ext_resource type="Script" uid="uid://br624aexboj5b" path="res://Scripts/FreeCamera.gd" id="12_fcam"]
 [ext_resource type="Script" uid="uid://c18s2h54vr6ie" path="res://Scripts/Track/Track.gd" id="13_track"]
 [ext_resource type="Script" uid="uid://ciwcm2dsw1e7d" path="res://Scripts/UI/HUD.gd" id="14_hud"]
+[ext_resource type="Script" uid="uid://ds8twtemtgt2w" path="res://Scripts/Simulation/SaveManager.gd" id="15_save"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_aficr"]
 size = Vector3(300, 10, 300)
@@ -179,10 +180,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 0)
 script = ExtResource("6_ajdda")
 car_scene = ExtResource("7_lljjv")
 population_size = 10
+start_position = true
 metadata/_custom_type_script = "uid://bpynhobgwfy1h"
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1359844354]
-transform = Transform3D(0.075785674, 0.13973291, -0.98728484, 0.020306721, 0.9897107, 0.14163505, 0.99691737, -0.030782424, 0.07216838, -1.2999992, 0.50062966, 2.2999997)
+transform = Transform3D(0.93190134, 0.29640722, -0.2090517, 0, 0.5763576, 0.8171976, 0.3627118, -0.76154757, 0.5371084, -1.3441188, 5.8692417, 8.848115)
 script = ExtResource("12_fcam")
 base_speed = 3.0
 
@@ -190,3 +192,6 @@ base_speed = 3.0
 scale = Vector2(0.8, 0.8)
 transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
 script = ExtResource("14_hud")
+
+[node name="SaveManager" type="Node" parent="." unique_id=555123456]
+script = ExtResource("15_save")

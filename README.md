@@ -19,6 +19,7 @@ Através de **Neuroevolução**, cada veículo possui sua própria rede neural a
 * 📡 **Sensores Raycast com Debug Visual**: 5 feixes de proximidade por veículo com alternância global de depuração visual via tecla `F3`.
 * 📷 **Câmera Livre Configurável (`FreeCamera`)**: Navegação fluida em 3D ou planar horizontal com controles familiares (`WASD`, `Shift`, `Espaço`), rotação por mouse e ajuste de velocidade dinâmico por scroll.
 * 🏁 **Contagem de Voltas (LAPs) & HUD em Tempo Real**: Telemetria na tela com voltas do líder, recorde histórico da sessão, status dos carros e setores/checkpoints validados.
+* 💾 **Exportação e Importação (Save & Load)**: Salve o progresso genético, recordes e posição da câmera com `F5` / `F6`, além de exportar modelos individuais do piloto campeão (`best_pilot.json`).
 * ⚡ **Motor Físico Jolt 3D**: Simulação física de alta estabilidade e desempenho integrada ao Godot 4.
 
 ---
@@ -34,9 +35,11 @@ Através de **Neuroevolução**, cada veículo possui sua própria rede neural a
 | **Ajustar Velocidade** | `Scroll da Roda` | Rolar para cima aumenta a velocidade; para baixo diminui |
 | **Turbo** | `Ctrl` | Multiplica a velocidade de deslocamento (2.5x) |
 
-### Simulação e Sensores
-| Comando | Tecla | Função |
+### Simulação e Persistência
+| Comando | Tecla / Botão | Função |
 | :--- | :--- | :--- |
+| **Salvar Estado Rápido** | `F5` ou Botão no HUD | Salva a geração atual, todos os genomas e posição da câmera |
+| **Carregar Estado Rápido** | `F6` ou Botão no HUD | Restaura imediatamente a simulação e a câmera |
 | **Depuração de Sensores** | `F3` | Liga ou desliga as linhas visuais dos sensores de todos os carros em tempo real |
 
 ---
@@ -46,6 +49,7 @@ Através de **Neuroevolução**, cada veículo possui sua própria rede neural a
 Para detalhes arquiteturais aprofundados, consulte os documentos dedicados na pasta `docs/`:
 
 * 📖 [**Visão Geral do Projeto**](docs/project_overview.md): Fluxo completo de simulação e conceitos de neuroevolução.
+* 💾 [**Sistema de Save & Load**](docs/save_load_system.md): Persistência em JSON de genomas, câmera e modelos de pilotos.
 * 📷 [**Guia da Câmera Livre (`FreeCamera`)**](docs/free_camera.md): Modos de operação, propriedades do Inspector e boas práticas.
 * 🧬 [**Genomas e Algoritmo Genético**](docs/genomes_evolution.md): Representação de 434 genes, elitismo, mutação e reprodução.
 * 🧠 [**Rede Neural Artificial**](docs/neural_network.md): Topologia de camadas, ativação $\tanh$, normalização de entradas e saídas de controle.

@@ -7,13 +7,16 @@ extends Node3D
 ## Flag global: ao pressionar a tecla F3, liga/desliga para todos os carros em tempo real
 static var global_debug: bool = true
 
+## Camadas de física que os sensores detectam (Camada 1 = Pista/Obstáculos)
+@export_flags_3d_physics var sensor_collision_mask: int = 1
+
 #@export var sensor_offset := Vector3(0.0, 0.3, -1.5)
 #@export var sensor_offset := Vector3(0.0, 0.05, -0.13)
 @export var sensor_offset := Vector3(0.0, 0.05, 0.15)
 
 const SENSOR_COUNT: int = 5
 #const MAX_DISTANCE: float = 0.2
-const MAX_DISTANCE: float = .25
+const MAX_DISTANCE: float = 1
 
 var sensor_angles: Array = [
 	deg_to_rad(-45.0),
@@ -91,6 +94,7 @@ func cast_sensor(angle: float) -> float:
 	
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(start, end)
 	query.exclude = [get_parent()]
+	query.collision_mask = sensor_collision_mask # <--- Força a ignorar os carros (Camada 2)
 	
 	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	

@@ -3,7 +3,7 @@ extends CharacterBody3D
 
 @export var max_speed: float = 300.0
 @export var acceleration: float = 200.0
-@export var brake_force: float = 300.0
+@export var brake_force: float = 100.0
 @export var steering_speed: float = 2.5
 
 @export_group("Inatividade / Timeout")

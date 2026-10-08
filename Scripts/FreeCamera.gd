@@ -240,3 +240,38 @@ func _process(delta: float) -> void:
 ## Verifica se uma tecla física ou virtual está pressionada
 func _is_key_down(key: Key) -> bool:
 	return Input.is_physical_key_pressed(key) or Input.is_key_pressed(key)
+
+
+## Retorna um dicionário com a posição, rotação e configurações da câmera
+func get_camera_state() -> Dictionary:
+	return {
+		"position": [global_position.x, global_position.y, global_position.z],
+		"yaw": _yaw,
+		"pitch": _pitch,
+		"base_speed": base_speed,
+		"movement_mode": int(movement_mode),
+		"mouse_control_mode": int(mouse_control_mode)
+	}
+
+
+## Restaura a posição, rotação e configurações da câmera
+func set_camera_state(data: Dictionary) -> void:
+	if data.has("position"):
+		var p: Array = data["position"]
+		if p.size() >= 3:
+			global_position = Vector3(float(p[0]), float(p[1]), float(p[2]))
+	
+	if data.has("yaw") and data.has("pitch"):
+		_yaw = float(data["yaw"])
+		_pitch = float(data["pitch"])
+		_pitch = clamp(_pitch, deg_to_rad(min_pitch), deg_to_rad(max_pitch))
+		rotation = Vector3(_pitch, _yaw, 0.0)
+	
+	if data.has("base_speed"):
+		base_speed = float(data["base_speed"])
+	
+	if data.has("movement_mode"):
+		movement_mode = int(data["movement_mode"]) as MovementMode
+	
+	if data.has("mouse_control_mode"):
+		mouse_control_mode = int(data["mouse_control_mode"]) as MouseControlMode
