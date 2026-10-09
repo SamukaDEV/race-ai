@@ -7,12 +7,14 @@ extends Node3D
 @export var track_path: NodePath = ^"../Track"
 
 signal lap_recorded(car: RaceCar, lap_count: int)
+signal simulation_paused_changed(is_paused: bool)
 
 var population: Population
 var cars: Array[RaceCar] = []
 var current_max_laps: int = 0
 var all_time_max_laps: int = 0
 var _is_transitioning: bool = false
+var is_simulation_paused: bool = false
 
 func _ready() -> void:
 	randomize()
@@ -116,7 +118,9 @@ func start_generation() -> void:
 		car.setup(genome)
 		car.lap_completed.connect(_on_car_lap_completed)
 		cars.append(car)
-		
+		if is_simulation_paused:
+			car.set_physics_process(false)
+
 		car_index += 1
 
 func _on_car_lap_completed(car: RaceCar, lap_count: int) -> void:
@@ -125,8 +129,24 @@ func _on_car_lap_completed(car: RaceCar, lap_count: int) -> void:
 	emit_signal("lap_recorded", car, lap_count)
 	print("🏁 LAP! %s completou a volta %d (Recorde da Sessão: %d)" % [car.name, lap_count, all_time_max_laps])
 
+## Alterna o estado de pausa da simulação
+func toggle_pause() -> bool:
+	set_simulation_paused(not is_simulation_paused)
+	return is_simulation_paused
+
+
+## Pausa ou retoma o processamento dos carros na pista
+func set_simulation_paused(paused: bool) -> void:
+	is_simulation_paused = paused
+	for car in cars:
+		if is_instance_valid(car):
+			car.set_physics_process(not paused)
+	emit_signal("simulation_paused_changed", is_simulation_paused)
+	print("Simulação " + ("PAUSADA ⏸️" if is_simulation_paused else "RETOMADA ▶️"))
+
+
 func _physics_process(_delta: float) -> void:
-	if _is_transitioning or cars.is_empty():
+	if is_simulation_paused or _is_transitioning or cars.is_empty():
 		return
 	
 	var all_dead := true

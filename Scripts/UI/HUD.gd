@@ -22,10 +22,15 @@ var _toast_panel: PanelContainer
 var _toast_label: Label
 var _toast_timer: Timer
 
+# Nós de controle de Pausa
+var _btn_pause: Button
+var _lbl_pause_banner: Label
+
 
 func _ready() -> void:
 	if has_node(simulation_path):
 		_simulation = get_node(simulation_path) as Simulation
+		_simulation.simulation_paused_changed.connect(_update_pause_ui)
 	if has_node(save_manager_path):
 		_save_manager = get_node(save_manager_path) as SaveManagerClass
 		_save_manager.operation_finished.connect(_on_save_manager_operation_finished)
@@ -42,6 +47,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_F6:
 			_on_load_pressed()
 			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_P or event.keycode == KEY_SPACE:
+			var f := get_viewport().gui_get_focus_owner()
+			if not (f and (f is LineEdit or f is TextEdit or f is SpinBox)):
+				_on_pause_pressed()
+				get_viewport().set_input_as_handled()
 
 
 func _build_ui() -> void:
@@ -81,6 +91,14 @@ func _build_ui() -> void:
 	header.add_theme_font_size_override("font_size", 14)
 	header.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
 	root_vbox.add_child(header)
+
+	_lbl_pause_banner = Label.new()
+	_lbl_pause_banner.text = "⏸️ SIMULAÇÃO PAUSADA"
+	_lbl_pause_banner.add_theme_font_size_override("font_size", 12)
+	_lbl_pause_banner.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	_lbl_pause_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_lbl_pause_banner.visible = false
+	root_vbox.add_child(_lbl_pause_banner)
 
 	var separator1 := HSeparator.new()
 	root_vbox.add_child(separator1)
@@ -137,10 +155,17 @@ func _build_ui() -> void:
 	var separator3 := HSeparator.new()
 	root_vbox.add_child(separator3)
 
-	# --- BOTÕES DE EXPORTAR E IMPORTAR ---
+	# --- BOTÕES DE AÇÕES E CONTROLE ---
 	var actions_box := HBoxContainer.new()
 	actions_box.add_theme_constant_override("separation", 6)
 	root_vbox.add_child(actions_box)
+
+	_btn_pause = Button.new()
+	_btn_pause.text = "⏸️ Pausar [P]"
+	_btn_pause.tooltip_text = "Pausa ou retoma a simulação (Atalho: P ou Espaço)"
+	_btn_pause.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_btn_pause.pressed.connect(_on_pause_pressed)
+	actions_box.add_child(_btn_pause)
 
 	var btn_save := Button.new()
 	btn_save.text = "💾 Salvar [F5]"
@@ -246,6 +271,20 @@ func show_toast(text: String, is_error: bool = false) -> void:
 	_toast_label.add_theme_color_override("font_color", color)
 	_toast_panel.visible = true
 	_toast_timer.start()
+
+
+func _on_pause_pressed() -> void:
+	if _simulation and is_instance_valid(_simulation):
+		var is_p := _simulation.toggle_pause()
+		_update_pause_ui(is_p)
+
+
+func _update_pause_ui(is_p: bool) -> void:
+	if _btn_pause and is_instance_valid(_btn_pause):
+		_btn_pause.text = "▶️ Retomar [P]" if is_p else "⏸️ Pausar [P]"
+		_btn_pause.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2) if is_p else Color(1.0, 1.0, 1.0))
+	if _lbl_pause_banner and is_instance_valid(_lbl_pause_banner):
+		_lbl_pause_banner.visible = is_p
 
 
 func _on_save_pressed() -> void:

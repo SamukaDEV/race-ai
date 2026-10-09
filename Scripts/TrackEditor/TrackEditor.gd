@@ -72,6 +72,17 @@ var _cfg_spin_accel: SpinBox
 var _cfg_spin_brake: SpinBox
 var _cfg_spin_steer: SpinBox
 
+# Grade 3D modular no chão
+var _grid_mesh: MeshInstance3D = null
+
+# Modal universal de confirmação
+var _confirm_modal: PanelContainer
+var _confirm_title_lbl: Label
+var _confirm_msg_lbl: Label
+var _confirm_btn_action: Button
+var _confirm_btn_cancel: Button
+var _confirm_callback: Callable = Callable()
+
 # Sidebar Vertical e Miniaturas
 var _sidebar_panel: PanelContainer
 var _piece_buttons: Dictionary = {}
@@ -79,6 +90,7 @@ var _thumbnail_cache: Dictionary = {}
 
 
 func _ready() -> void:
+	_setup_grid_visual()
 	_setup_editor_ui()
 	_update_ghost_piece()
 
@@ -108,19 +120,32 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var vp := get_viewport()
+
 	# Solta o foco de campos de texto ao pressionar ESC ou ENTER
 	if event is InputEventKey and event.pressed and (event.keycode == KEY_ESCAPE or event.keycode == KEY_ENTER):
-		var f := get_viewport().gui_get_focus_owner()
-		if f:
-			f.release_focus()
-			get_viewport().set_input_as_handled()
-			return
+		if vp:
+			var f := vp.gui_get_focus_owner()
+			if f:
+				f.release_focus()
+				vp.set_input_as_handled()
+				return
 
 	# Clique do mouse solta foco de LineEdits
 	if event is InputEventMouseButton and event.pressed:
-		var f := get_viewport().gui_get_focus_owner()
-		if f and f is LineEdit:
-			f.release_focus()
+		if vp:
+			var f := vp.gui_get_focus_owner()
+			if f and f is LineEdit:
+				f.release_focus()
+
+	# Atalho 'G' para alternar visibilidade da grade 3D
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_G:
+		if _grid_mesh:
+			_grid_mesh.visible = not _grid_mesh.visible
+			_show_toast("Grade 3D: " + ("Ativa" if _grid_mesh.visible else "Oculta"))
+			if vp:
+				vp.set_input_as_handled()
+			return
 
 	if _is_mouse_over_ui:
 		return
@@ -130,16 +155,74 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_R:
 			current_rotation_y = fposmod(current_rotation_y + 90.0, 360.0)
 			_update_ghost_transform()
-			get_viewport().set_input_as_handled()
+			if vp:
+				vp.set_input_as_handled()
 
 	# Clique do mouse para colocar ou remover peças
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT and _is_hovering_ground:
 			place_piece_at(_hovered_grid_pos, current_piece_id, current_rotation_y)
-			get_viewport().set_input_as_handled()
+			if vp:
+				vp.set_input_as_handled()
 		elif event.button_index == MOUSE_BUTTON_RIGHT and _is_hovering_ground:
 			remove_piece_at(_hovered_grid_pos)
-			get_viewport().set_input_as_handled()
+			if vp:
+				vp.set_input_as_handled()
+
+
+func _setup_grid_visual() -> void:
+	if _grid_mesh and is_instance_valid(_grid_mesh):
+		return
+
+	var imm := ImmediateMesh.new()
+	imm.surface_begin(Mesh.PRIMITIVE_LINES)
+
+	var half_extent := 35.0
+	var step := grid_size
+	var color_minor := Color(0.18, 0.26, 0.38, 0.35)
+	var color_major := Color(0.0, 0.8, 1.0, 0.65)
+	var color_axis_x := Color(1.0, 0.3, 0.3, 0.8)
+	var color_axis_z := Color(0.2, 0.5, 1.0, 0.8)
+
+	var count := int(round(half_extent / step))
+	for i in range(-count, count + 1):
+		var coord: float = float(i) * step
+		var col_x: Color = color_minor
+		var col_z: Color = color_minor
+
+		if i == 0:
+			col_z = color_axis_x # Linha no eixo X
+			col_x = color_axis_z # Linha no eixo Z
+		elif i % 5 == 0:
+			col_x = color_major
+			col_z = color_major
+
+		# Linha paralela a Z (X constante)
+		imm.surface_set_color(col_x)
+		imm.surface_add_vertex(Vector3(coord, 0.0, -half_extent))
+		imm.surface_set_color(col_x)
+		imm.surface_add_vertex(Vector3(coord, 0.0, half_extent))
+
+		# Linha paralela a X (Z constante)
+		imm.surface_set_color(col_z)
+		imm.surface_add_vertex(Vector3(-half_extent, 0.0, coord))
+		imm.surface_set_color(col_z)
+		imm.surface_add_vertex(Vector3(half_extent, 0.0, coord))
+
+	imm.surface_end()
+
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.vertex_color_use_as_albedo = true
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+
+	_grid_mesh = MeshInstance3D.new()
+	_grid_mesh.name = "EditorGroundGrid"
+	_grid_mesh.mesh = imm
+	_grid_mesh.material_override = mat
+	_grid_mesh.position = Vector3(0.0, 0.015, 0.0)
+	add_child(_grid_mesh)
 
 
 func _update_mouse_raycast() -> void:
@@ -471,15 +554,13 @@ func _setup_editor_ui() -> void:
 	var canvas: CanvasLayer = CanvasLayer.new()
 	add_child(canvas)
 
-	canvas.scale = Vector2(0.8, 0.8)
-
 	# --- BARRA SUPERIOR COMPACTA (AÇÕES & NOME DA PISTA) ---
 	var top_panel := PanelContainer.new()
 	top_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	top_panel.offset_left = 10
 	top_panel.offset_top = 8
 	top_panel.offset_right = -10
-	top_panel.offset_bottom = 50
+	top_panel.offset_bottom = 48
 
 	var top_style := StyleBoxFlat.new()
 	top_style.bg_color = Color(0.06, 0.08, 0.12, 0.94)
@@ -489,8 +570,8 @@ func _setup_editor_ui() -> void:
 	top_style.border_width_right = 1
 	top_style.border_width_bottom = 1
 	top_style.border_color = Color(0.18, 0.25, 0.38, 0.8)
-	top_style.content_margin_left = 10
-	top_style.content_margin_right = 10
+	top_style.content_margin_left = 12
+	top_style.content_margin_right = 12
 	top_style.content_margin_top = 4
 	top_style.content_margin_bottom = 4
 	top_panel.add_theme_stylebox_override("panel", top_style)
@@ -512,38 +593,46 @@ func _setup_editor_ui() -> void:
 
 	var lbl_name := Label.new()
 	lbl_name.text = "Nome:"
-	lbl_name.add_theme_font_size_override("font_size", 12)
+	lbl_name.add_theme_font_size_override("font_size", 11)
 	top_hbox.add_child(lbl_name)
 
 	_line_edit_name = LineEdit.new()
 	_line_edit_name.text = default_track_name
-	_line_edit_name.custom_minimum_size = Vector2(140, 26)
-	_line_edit_name.add_theme_font_size_override("font_size", 12)
+	_line_edit_name.custom_minimum_size = Vector2(130, 26)
+	_line_edit_name.add_theme_font_size_override("font_size", 11)
 	_line_edit_name.text_submitted.connect(func(_t): _line_edit_name.release_focus())
 	top_hbox.add_child(_line_edit_name)
 
 	var btn_save := Button.new()
 	btn_save.text = "💾 Salvar"
-	btn_save.add_theme_font_size_override("font_size", 12)
+	btn_save.add_theme_font_size_override("font_size", 11)
 	btn_save.pressed.connect(save_track)
 	top_hbox.add_child(btn_save)
 
 	var btn_load := Button.new()
-	btn_load.text = "📂 Carregar"
-	btn_load.add_theme_font_size_override("font_size", 12)
+	btn_load.text = "📂 Pistas"
+	btn_load.add_theme_font_size_override("font_size", 11)
 	btn_load.pressed.connect(_open_load_modal)
 	top_hbox.add_child(btn_load)
 
 	var btn_settings := Button.new()
 	btn_settings.text = "⚙️ Configs"
-	btn_settings.add_theme_font_size_override("font_size", 12)
+	btn_settings.add_theme_font_size_override("font_size", 11)
 	btn_settings.pressed.connect(_open_settings_modal)
 	top_hbox.add_child(btn_settings)
 
 	var btn_clear := Button.new()
 	btn_clear.text = "🧹 Limpar"
-	btn_clear.add_theme_font_size_override("font_size", 12)
-	btn_clear.pressed.connect(clear_all_pieces)
+	btn_clear.add_theme_font_size_override("font_size", 11)
+	btn_clear.pressed.connect(func():
+		_request_confirmation(
+			"🧹 Limpar Pista",
+			"Tem certeza de que deseja remover todas as peças da pista atual?\nEssa ação não pode ser desfeita.",
+			"Limpar Tudo",
+			Color(1.0, 0.35, 0.35),
+			clear_all_pieces
+		)
+	)
 	top_hbox.add_child(btn_clear)
 
 	var spacer := Control.new()
@@ -551,15 +640,15 @@ func _setup_editor_ui() -> void:
 	top_hbox.add_child(spacer)
 
 	var btn_test := Button.new()
-	btn_test.text = "🏎️ Testar"
-	btn_test.add_theme_font_size_override("font_size", 12)
+	btn_test.text = "🏎️ Testar Simulação"
+	btn_test.add_theme_font_size_override("font_size", 11)
 	btn_test.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
 	btn_test.pressed.connect(test_in_simulation)
 	top_hbox.add_child(btn_test)
 
 	var btn_menu := Button.new()
 	btn_menu.text = "🏠 Menu"
-	btn_menu.add_theme_font_size_override("font_size", 12)
+	btn_menu.add_theme_font_size_override("font_size", 11)
 	btn_menu.pressed.connect(go_to_main_menu)
 	top_hbox.add_child(btn_menu)
 
@@ -569,8 +658,11 @@ func _setup_editor_ui() -> void:
 	# --- DICA DE CONTROLES NO RODAPÉ ---
 	_setup_bottom_hint_ui(canvas)
 
-	# --- MODAL DE CARREGAMENTO ---
+	# --- MODAL DE CARREGAMENTO & EXCLUSÃO ---
 	_setup_load_modal(canvas)
+
+	# --- MODAL UNIVERSAL DE CONFIRMAÇÃO ---
+	_setup_confirm_modal(canvas)
 
 	# --- MODAL DE CONFIGURAÇÕES DA PISTA ---
 	_setup_settings_modal(canvas)
@@ -579,11 +671,115 @@ func _setup_editor_ui() -> void:
 	_setup_toast_ui(canvas)
 
 
+func _setup_confirm_modal(canvas: CanvasLayer) -> void:
+	_confirm_modal = PanelContainer.new()
+	_confirm_modal.visible = false
+	_confirm_modal.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_confirm_modal.custom_minimum_size = Vector2(360, 170)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.07, 0.09, 0.14, 0.98)
+	style.set_corner_radius_all(10)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(1.0, 0.4, 0.4, 0.8)
+	style.content_margin_left = 18
+	style.content_margin_top = 14
+	style.content_margin_right = 18
+	style.content_margin_bottom = 14
+	_confirm_modal.add_theme_stylebox_override("panel", style)
+	canvas.add_child(_confirm_modal)
+
+	_connect_mouse_filter(_confirm_modal)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	_confirm_modal.add_child(vbox)
+
+	_confirm_title_lbl = Label.new()
+	_confirm_title_lbl.text = "⚠️ CONFIRMAÇÃO"
+	_confirm_title_lbl.add_theme_font_size_override("font_size", 14)
+	_confirm_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+	vbox.add_child(_confirm_title_lbl)
+
+	_confirm_msg_lbl = Label.new()
+	_confirm_msg_lbl.text = "Tem certeza de que deseja realizar esta ação?"
+	_confirm_msg_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirm_msg_lbl.add_theme_font_size_override("font_size", 12)
+	_confirm_msg_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
+	_confirm_msg_lbl.custom_minimum_size = Vector2(324, 46)
+	vbox.add_child(_confirm_msg_lbl)
+
+	var btn_hbox := HBoxContainer.new()
+	btn_hbox.alignment = BoxContainer.ALIGNMENT_END
+	btn_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(btn_hbox)
+
+	_confirm_btn_cancel = Button.new()
+	_confirm_btn_cancel.text = "Cancelar"
+	_confirm_btn_cancel.add_theme_font_size_override("font_size", 12)
+	_confirm_btn_cancel.pressed.connect(func():
+		_confirm_modal.visible = false
+		_confirm_callback = Callable()
+	)
+	btn_hbox.add_child(_confirm_btn_cancel)
+
+	_confirm_btn_action = Button.new()
+	_confirm_btn_action.text = "Confirmar"
+	_confirm_btn_action.add_theme_font_size_override("font_size", 12)
+	_confirm_btn_action.pressed.connect(confirm_action)
+	btn_hbox.add_child(_confirm_btn_action)
+
+
+func confirm_action() -> void:
+	if _confirm_modal:
+		_confirm_modal.visible = false
+	if _confirm_callback.is_valid():
+		var cb := _confirm_callback
+		_confirm_callback = Callable()
+		cb.call()
+
+
+func _request_confirmation(title: String, message: String, action_label: String, action_color: Color, callback: Callable) -> void:
+	if not _confirm_modal:
+		return
+	_confirm_title_lbl.text = title
+	_confirm_title_lbl.add_theme_color_override("font_color", action_color)
+	_confirm_msg_lbl.text = message
+	_confirm_btn_action.text = action_label
+	_confirm_btn_action.add_theme_color_override("font_color", action_color)
+	_confirm_callback = callback
+	_confirm_modal.visible = true
+
+
+func _delete_track_files(track_id: String) -> void:
+	var user_path := "user://tracks/" + track_id + ".json"
+	var res_path := "res://tracks/" + track_id + ".json"
+	var deleted_any := false
+
+	if FileAccess.file_exists(user_path):
+		var err := DirAccess.remove_absolute(user_path)
+		if err == OK:
+			deleted_any = true
+
+	if FileAccess.file_exists(res_path):
+		var err_res := DirAccess.remove_absolute(res_path)
+		if err_res == OK:
+			deleted_any = true
+
+	if deleted_any:
+		_show_toast("🗑️ Pista [%s] excluída com sucesso!" % track_id)
+	else:
+		_show_toast("⚠️ Não foi possível excluir a pista [%s]!" % track_id, true)
+
+
 func _setup_load_modal(canvas: CanvasLayer) -> void:
 	_load_modal = PanelContainer.new()
 	_load_modal.visible = false
 	_load_modal.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_load_modal.custom_minimum_size = Vector2(340, 260)
+	_load_modal.custom_minimum_size = Vector2(380, 280)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.1, 0.15, 0.98)
@@ -607,13 +803,13 @@ func _setup_load_modal(canvas: CanvasLayer) -> void:
 	_load_modal.add_child(vbox)
 
 	var title := Label.new()
-	title.text = "📂 SELECIONE UMA PISTA"
+	title.text = "📂 PISTAS SALVAS"
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
 	vbox.add_child(title)
 
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(300, 150)
+	scroll.custom_minimum_size = Vector2(348, 170)
 	vbox.add_child(scroll)
 
 	_track_list_container = VBoxContainer.new()
@@ -637,14 +833,42 @@ func _open_load_modal() -> void:
 		_track_list_container.add_child(empty_lbl)
 	else:
 		for trk in tracks:
-			var btn := Button.new()
-			btn.text = trk["name"] + " (" + trk["id"] + ")"
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 6)
+			_track_list_container.add_child(row)
+
+			var btn_load := Button.new()
+			btn_load.text = trk["name"] + " (" + trk["id"] + ")"
+			btn_load.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn_load.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			btn_load.add_theme_font_size_override("font_size", 11)
 			var path: String = trk["path"]
-			btn.pressed.connect(func():
+			btn_load.pressed.connect(func():
 				load_track_from_file(path)
 				_load_modal.visible = false
 			)
-			_track_list_container.add_child(btn)
+			row.add_child(btn_load)
+
+			var btn_del := Button.new()
+			btn_del.text = "🗑️"
+			btn_del.tooltip_text = "Excluir pista permanentemente"
+			btn_del.custom_minimum_size = Vector2(32, 26)
+			btn_del.add_theme_font_size_override("font_size", 11)
+			btn_del.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+			var t_id: String = trk["id"]
+			var t_name: String = trk["name"]
+			btn_del.pressed.connect(func():
+				_request_confirmation(
+					"🗑️ Excluir Pista",
+					"Deseja realmente excluir a pista '%s' (%s)?\nO arquivo salvo será apagado permanentemente." % [t_name, t_id],
+					"Excluir",
+					Color(1.0, 0.35, 0.35),
+					func():
+						_delete_track_files(t_id)
+						_open_load_modal()
+				)
+			)
+			row.add_child(btn_del)
 
 	_load_modal.visible = true
 
@@ -707,6 +931,7 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	_cfg_spin_pop.min_value = 1
 	_cfg_spin_pop.max_value = 100
 	_cfg_spin_pop.step = 1
+	_cfg_spin_pop.allow_greater = true
 	_cfg_spin_pop.value = 4
 	pop_hbox.add_child(_cfg_spin_pop)
 
@@ -734,9 +959,10 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	idle_hbox.add_child(_cfg_check_idle)
 
 	_cfg_spin_idle = SpinBox.new()
-	_cfg_spin_idle.min_value = 1.0
-	_cfg_spin_idle.max_value = 20.0
-	_cfg_spin_idle.step = 0.5
+	_cfg_spin_idle.min_value = 0.1
+	_cfg_spin_idle.max_value = 60.0
+	_cfg_spin_idle.step = 0.1
+	_cfg_spin_idle.allow_greater = true
 	_cfg_spin_idle.value = 3.0
 	idle_hbox.add_child(_cfg_spin_idle)
 	grid.add_child(idle_hbox)
@@ -748,10 +974,11 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	grid.add_child(lbl_mut_rate)
 
 	_cfg_spin_mut_rate = SpinBox.new()
-	_cfg_spin_mut_rate.min_value = 0.01
-	_cfg_spin_mut_rate.max_value = 0.50
-	_cfg_spin_mut_rate.step = 0.01
-	_cfg_spin_mut_rate.value = 0.05
+	_cfg_spin_mut_rate.min_value = 0.001
+	_cfg_spin_mut_rate.max_value = 1.000
+	_cfg_spin_mut_rate.step = 0.001
+	_cfg_spin_mut_rate.allow_greater = true
+	_cfg_spin_mut_rate.value = 0.050
 	grid.add_child(_cfg_spin_mut_rate)
 
 	# 4. Força da Mutação
@@ -761,9 +988,10 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	grid.add_child(lbl_mut_pow)
 
 	_cfg_spin_mut_power = SpinBox.new()
-	_cfg_spin_mut_power.min_value = 0.05
-	_cfg_spin_mut_power.max_value = 1.50
-	_cfg_spin_mut_power.step = 0.05
+	_cfg_spin_mut_power.min_value = 0.01
+	_cfg_spin_mut_power.max_value = 5.00
+	_cfg_spin_mut_power.step = 0.01
+	_cfg_spin_mut_power.allow_greater = true
 	_cfg_spin_mut_power.value = 0.20
 	grid.add_child(_cfg_spin_mut_power)
 
@@ -774,9 +1002,10 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	grid.add_child(lbl_elite)
 
 	_cfg_spin_elite = SpinBox.new()
-	_cfg_spin_elite.min_value = 1
-	_cfg_spin_elite.max_value = 5
+	_cfg_spin_elite.min_value = 0
+	_cfg_spin_elite.max_value = 50
 	_cfg_spin_elite.step = 1
+	_cfg_spin_elite.allow_greater = true
 	_cfg_spin_elite.value = 1
 	grid.add_child(_cfg_spin_elite)
 
@@ -787,9 +1016,10 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	grid.add_child(lbl_speed)
 
 	_cfg_spin_speed = SpinBox.new()
-	_cfg_spin_speed.min_value = 10.0
-	_cfg_spin_speed.max_value = 1000.0
-	_cfg_spin_speed.step = 5.0
+	_cfg_spin_speed.min_value = 0.0
+	_cfg_spin_speed.max_value = 2000.0
+	_cfg_spin_speed.step = 0.1
+	_cfg_spin_speed.allow_greater = true
 	_cfg_spin_speed.value = 300.0
 	grid.add_child(_cfg_spin_speed)
 
@@ -800,9 +1030,10 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	grid.add_child(lbl_accel)
 
 	_cfg_spin_accel = SpinBox.new()
-	_cfg_spin_accel.min_value = 10.0
-	_cfg_spin_accel.max_value = 1000.0
-	_cfg_spin_accel.step = 10.0
+	_cfg_spin_accel.min_value = 0.0
+	_cfg_spin_accel.max_value = 2000.0
+	_cfg_spin_accel.step = 0.1
+	_cfg_spin_accel.allow_greater = true
 	_cfg_spin_accel.value = 200.0
 	grid.add_child(_cfg_spin_accel)
 
@@ -813,9 +1044,10 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	grid.add_child(lbl_brake)
 
 	_cfg_spin_brake = SpinBox.new()
-	_cfg_spin_brake.min_value = 10.0
-	_cfg_spin_brake.max_value = 600.0
-	_cfg_spin_brake.step = 10.0
+	_cfg_spin_brake.min_value = 0.0
+	_cfg_spin_brake.max_value = 2000.0
+	_cfg_spin_brake.step = 0.1
+	_cfg_spin_brake.allow_greater = true
 	_cfg_spin_brake.value = 100.0
 	grid.add_child(_cfg_spin_brake)
 
@@ -826,10 +1058,11 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	grid.add_child(lbl_steer)
 
 	_cfg_spin_steer = SpinBox.new()
-	_cfg_spin_steer.min_value = 0.5
-	_cfg_spin_steer.max_value = 10.0
-	_cfg_spin_steer.step = 0.1
-	_cfg_spin_steer.value = 2.5
+	_cfg_spin_steer.min_value = 0.0
+	_cfg_spin_steer.max_value = 100.0
+	_cfg_spin_steer.step = 0.01
+	_cfg_spin_steer.allow_greater = true
+	_cfg_spin_steer.value = 2.50
 	grid.add_child(_cfg_spin_steer)
 
 	vbox.add_child(HSeparator.new())
@@ -949,8 +1182,8 @@ func _setup_toast_ui(canvas: CanvasLayer) -> void:
 	_toast_panel = PanelContainer.new()
 	_toast_panel.visible = false
 	_toast_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_toast_panel.offset_top = 70
-	_toast_panel.offset_bottom = 106
+	_toast_panel.offset_top = 60
+	_toast_panel.offset_bottom = 96
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.12, 0.18, 0.95)
@@ -985,7 +1218,8 @@ func _show_toast(text: String, is_error: bool = false) -> void:
 	var color := Color(1.0, 0.35, 0.35) if is_error else Color(0.4, 1.0, 0.6)
 	_toast_label.add_theme_color_override("font_color", color)
 	_toast_panel.visible = true
-	_toast_timer.start()
+	if _toast_timer and _toast_timer.is_inside_tree():
+		_toast_timer.start()
 
 
 func _connect_mouse_filter(control_node: Control) -> void:
@@ -1000,9 +1234,9 @@ func _setup_sidebar_ui(canvas: CanvasLayer) -> void:
 	_sidebar_panel = PanelContainer.new()
 	_sidebar_panel.set_anchors_and_offsets_preset(Control.PRESET_LEFT_WIDE)
 	_sidebar_panel.offset_left = 10
-	_sidebar_panel.offset_top = 58
-	_sidebar_panel.offset_right = 236
-	_sidebar_panel.offset_bottom = -10
+	_sidebar_panel.offset_top = 54
+	_sidebar_panel.offset_right = 214
+	_sidebar_panel.offset_bottom = -44
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.08, 0.12, 0.94)
@@ -1012,9 +1246,9 @@ func _setup_sidebar_ui(canvas: CanvasLayer) -> void:
 	style.border_width_right = 1
 	style.border_width_bottom = 1
 	style.border_color = Color(0.18, 0.25, 0.38, 0.8)
-	style.content_margin_left = 8
-	style.content_margin_top = 10
-	style.content_margin_right = 8
+	style.content_margin_left = 6
+	style.content_margin_top = 8
+	style.content_margin_right = 6
 	style.content_margin_bottom = 8
 	_sidebar_panel.add_theme_stylebox_override("panel", style)
 	canvas.add_child(_sidebar_panel)
@@ -1032,7 +1266,7 @@ func _setup_sidebar_ui(canvas: CanvasLayer) -> void:
 	main_vbox.add_child(header_lbl)
 
 	var sub_lbl := Label.new()
-	sub_lbl.text = "Selecione e posicione na grade:"
+	sub_lbl.text = "Clique e posicione no 3D:"
 	sub_lbl.add_theme_font_size_override("font_size", 10)
 	sub_lbl.add_theme_color_override("font_color", Color(0.65, 0.72, 0.8))
 	main_vbox.add_child(sub_lbl)
@@ -1047,7 +1281,7 @@ func _setup_sidebar_ui(canvas: CanvasLayer) -> void:
 
 	var pieces_vbox := VBoxContainer.new()
 	pieces_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	pieces_vbox.add_theme_constant_override("separation", 5)
+	pieces_vbox.add_theme_constant_override("separation", 4)
 	scroll.add_child(pieces_vbox)
 
 	for piece_id in ORDERED_PIECES:
@@ -1067,7 +1301,7 @@ func _create_piece_button(piece_id: String) -> Button:
 	btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.expand_icon = false
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	btn.custom_minimum_size = Vector2(204, 46)
+	btn.custom_minimum_size = Vector2(188, 38)
 	btn.add_theme_font_size_override("font_size", 11)
 
 	var normal_sb := StyleBoxFlat.new()
@@ -1080,8 +1314,8 @@ func _create_piece_button(piece_id: String) -> Button:
 	normal_sb.border_color = Color(0.2, 0.28, 0.4, 0.5)
 	normal_sb.content_margin_left = 6
 	normal_sb.content_margin_right = 6
-	normal_sb.content_margin_top = 4
-	normal_sb.content_margin_bottom = 4
+	normal_sb.content_margin_top = 3
+	normal_sb.content_margin_bottom = 3
 	btn.add_theme_stylebox_override("normal", normal_sb)
 
 	var hover_sb := normal_sb.duplicate() as StyleBoxFlat
@@ -1116,8 +1350,8 @@ func _update_selected_piece_ui() -> void:
 			active_sb.border_color = Color(0.2, 1.0, 0.6, 1.0)
 			active_sb.content_margin_left = 6
 			active_sb.content_margin_right = 6
-			active_sb.content_margin_top = 4
-			active_sb.content_margin_bottom = 4
+			active_sb.content_margin_top = 3
+			active_sb.content_margin_bottom = 3
 			btn.add_theme_stylebox_override("normal", active_sb)
 			btn.add_theme_color_override("font_color", Color(0.3, 1.0, 0.7))
 		else:
@@ -1131,8 +1365,8 @@ func _update_selected_piece_ui() -> void:
 			normal_sb.border_color = Color(0.2, 0.28, 0.4, 0.5)
 			normal_sb.content_margin_left = 6
 			normal_sb.content_margin_right = 6
-			normal_sb.content_margin_top = 4
-			normal_sb.content_margin_bottom = 4
+			normal_sb.content_margin_top = 3
+			normal_sb.content_margin_bottom = 3
 			btn.add_theme_stylebox_override("normal", normal_sb)
 			btn.add_theme_color_override("font_color", Color(0.9, 0.92, 0.96))
 
@@ -1140,10 +1374,10 @@ func _update_selected_piece_ui() -> void:
 func _setup_bottom_hint_ui(canvas: CanvasLayer) -> void:
 	var hint_panel := PanelContainer.new()
 	hint_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	hint_panel.offset_left = 246
-	hint_panel.offset_top = -42
+	hint_panel.offset_left = 222
+	hint_panel.offset_top = -36
 	hint_panel.offset_right = -10
-	hint_panel.offset_bottom = -10
+	hint_panel.offset_bottom = -8
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.08, 0.12, 0.9)
@@ -1155,8 +1389,8 @@ func _setup_bottom_hint_ui(canvas: CanvasLayer) -> void:
 	style.border_color = Color(0.18, 0.25, 0.38, 0.6)
 	style.content_margin_left = 12
 	style.content_margin_right = 12
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
+	style.content_margin_top = 3
+	style.content_margin_bottom = 3
 	hint_panel.add_theme_stylebox_override("panel", style)
 	canvas.add_child(hint_panel)
 
@@ -1164,14 +1398,15 @@ func _setup_bottom_hint_ui(canvas: CanvasLayer) -> void:
 
 	var hbox := HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 14)
+	hbox.add_theme_constant_override("separation", 16)
 	hint_panel.add_child(hbox)
 
 	var hints := [
 		"🖱️ [Esq]: Inserir Peça",
 		"🖱️ [Dir]: Remover",
-		"⌨️ [R]: Girar Peça (90°)",
-		"🎥 WASD + Botão Dir: Mover Câmera"
+		"⌨️ [R]: Girar (90°)",
+		"⌨️ [G]: Grade 3D",
+		"🎥 WASD + Botão Dir: Câmera"
 	]
 	for h in hints:
 		var lbl := Label.new()
