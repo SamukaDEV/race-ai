@@ -29,6 +29,13 @@ var death_reason: String = ""
 var final_fitness: float = 0.0
 var car_profile_id: String = "standard"
 
+# Variáveis de Lap Time, Amortecimento e Recompensa
+var current_lap_time: float = 0.0
+var best_lap_time: float = 9999.0
+var steer_smooth: float = 0.0
+var oscillation_penalty: float = 0.0
+var lap_time_bonus: float = 0.0
+
 
 ## Aplica as configurações do perfil de carro à física e aos sensores
 func apply_profile(profile_data: Dictionary) -> void:
@@ -73,12 +80,14 @@ func _physics_process(delta: float) -> void:
 	
 	var sensor_values: PackedFloat32Array = sensors.update_sensors()
 	
+	current_lap_time += delta
+	
 	var inputs: PackedFloat32Array = PackedFloat32Array()
 	inputs.resize(sensor_values.size() + 2)
 	for i in range(sensor_values.size()):
 		inputs[i] = sensor_values[i]
 	inputs[sensor_values.size()] = speed_value / max_speed
-	inputs[sensor_values.size() + 1] = get_direction_input()
+	inputs[sensor_values.size() + 1] = get_direction_input(sensor_values)
 	
 	var outputs := neural_network.forward(inputs)
 	
@@ -112,25 +121,33 @@ func _physics_process(delta: float) -> void:
 			idle_timer = 0.0
 	
 func apply_controls(gas: float, steer: float, delta: float) -> void:
-	# 1. Aceleração / Freio
-	if gas >= 0.0:
+	# 1. Aceleração / Freio com Resistência de Rolamento Natural (Drag)
+	if gas > 0.05:
 		speed_value += gas * acceleration * delta
-	else:
+	elif gas < -0.05:
+		# Frenagem ativa comandada pela rede neural
 		speed_value -= abs(gas) * brake_force * delta
+	else:
+		# Arrasto natural / freio-motor suave na ausência de aceleração
+		speed_value = move_toward(speed_value, 0.0, 15.0 * delta)
 	
 	speed_value = clamp(speed_value, 0.0, max_speed)
 	
-	# 2. Direção (Abordagem 1: Agilidade Inversa à Velocidade)
-	# Impede que o carro gire parado no lugar (atinge 100% de manobrabilidade a partir de 15.0 de velocidade)
+	# 2. Direção com Amortecimento Suave (Damping)
+	# Suaviza a transição angular do volante via interpolação, eliminando o efeito ping-pong
+	steer_smooth = lerp(steer_smooth, steer, clamp(delta * 12.0, 0.0, 1.0))
+	
 	var motion_factor: float = clamp(speed_value / 15.0, 0.0, 1.0)
 	var speed_ratio: float = speed_value / max_speed if max_speed > 0.0 else 0.0
 	
-	# Em baixa velocidade: 1.4x de curva (muito ágil para contornar curvas fechadas)
-	# Em alta velocidade: 0.7x de curva (estável e controlável nas retas)
-	var turn_agility: float = lerp(1.4, 0.7, speed_ratio)
+	# Em alta velocidade reduz a sensibilidade para manter estabilidade direcional
+	var turn_agility: float = lerp(1.3, 0.6, speed_ratio)
 	
-	var steering_amount: float = steer * steering_speed * delta * motion_factor * turn_agility
+	var steering_amount: float = steer_smooth * steering_speed * delta * motion_factor * turn_agility
 	rotate_y(steering_amount)
+	
+	# Penalidade leve cumulativa por oscilar desnecessariamente o volante
+	oscillation_penalty += abs(steer) * 0.08 * delta
 	
 	# 3. Movimento
 	var forward: Vector3 = global_transform.basis.z
@@ -144,16 +161,22 @@ func apply_controls(gas: float, steer: float, delta: float) -> void:
 	else:
 		velocity.y = 0.0
 
-func get_direction_input() -> float:
-	# Temporariamente usamos a rotação do carro.
-	# Posteriormente vamos substituir pelo erro relativo à direção da pista.
-	
-	return sin(rotation.y)
+func get_direction_input(sensor_values: PackedFloat32Array = PackedFloat32Array()) -> float:
+	# Balanço lateral relativo aos limites da pista (Centro = 0.0)
+	# Substitui a orientação absoluta de bússola por informação direta de centralização
+	if sensor_values.size() >= 2:
+		var left_dist: float = sensor_values[0]
+		var right_dist: float = sensor_values[sensor_values.size() - 1]
+		if sensor_values.size() >= 5:
+			left_dist = (sensor_values[0] * 0.6) + (sensor_values[1] * 0.4)
+			right_dist = (sensor_values[sensor_values.size() - 1] * 0.6) + (sensor_values[sensor_values.size() - 2] * 0.4)
+		return clamp(right_dist - left_dist, -1.0, 1.0)
+	return 0.0
 
 func die(reason: String = "Dead") -> void:
 	if not alive:
 		return
-	final_fitness = distance_traveled + (laps * 500.0)
+	final_fitness = get_fitness()
 	alive = false
 	death_reason = reason
 	velocity = Vector3.ZERO
@@ -165,7 +188,8 @@ func die(reason: String = "Dead") -> void:
 func get_fitness() -> float:
 	if not alive and final_fitness > 0.0:
 		return final_fitness
-	return distance_traveled + (laps * 500.0)
+	var fit: float = distance_traveled + (laps * 1000.0) + lap_time_bonus - oscillation_penalty
+	return max(0.1, fit)
 
 ## Registra a passagem por um checkpoint na ordem correta
 func register_checkpoint(checkpoint_idx: int, total_checkpoints: int) -> bool:
@@ -178,6 +202,13 @@ func register_checkpoint(checkpoint_idx: int, total_checkpoints: int) -> bool:
 		if current_checkpoint_index >= total_checkpoints:
 			laps += 1
 			current_checkpoint_index = 0
+			# Bônus inversamente proporcional ao tempo gasto nesta volta
+			# Quanto mais rápida e limpa a volta, maior a recompensa
+			var bonus: float = max(0.0, 30.0 - current_lap_time) * 40.0
+			lap_time_bonus += bonus
+			best_lap_time = min(best_lap_time, current_lap_time)
+			current_lap_time = 0.0
+			
 			emit_signal("lap_completed", self, laps)
 			update_car_label()
 			return true

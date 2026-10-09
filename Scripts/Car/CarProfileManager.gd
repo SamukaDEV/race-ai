@@ -21,7 +21,7 @@ static func get_default_profile() -> Dictionary:
 		},
 		"sensors": {
 			"sensor_count": 5,
-			"sensor_range": 1.5,
+			"sensor_range": 3.5,
 			"sensor_spread_angle": 90.0,
 			"sensor_offset_y": 0.05,
 			"sensor_offset_z": 0.15
@@ -193,7 +193,7 @@ static func _normalize_profile(raw: Dictionary, fallback_id: String) -> Dictiona
 	if not prof.has("sensors") or not (prof["sensors"] is Dictionary):
 		prof["sensors"] = {
 			"sensor_count": int(prof.get("sensor_count", 5)),
-			"sensor_range": float(prof.get("sensor_range", 1.5)),
+			"sensor_range": float(prof.get("sensor_range", 3.5)),
 			"sensor_spread_angle": float(prof.get("sensor_spread_angle", 90.0)),
 			"sensor_offset_y": float(prof.get("sensor_offset_y", 0.05)),
 			"sensor_offset_z": float(prof.get("sensor_offset_z", 0.15))
@@ -201,7 +201,7 @@ static func _normalize_profile(raw: Dictionary, fallback_id: String) -> Dictiona
 	else:
 		var sen: Dictionary = prof["sensors"]
 		sen["sensor_count"] = int(sen.get("sensor_count", 5))
-		sen["sensor_range"] = float(sen.get("sensor_range", 1.5))
+		sen["sensor_range"] = float(sen.get("sensor_range", 3.5))
 		sen["sensor_spread_angle"] = float(sen.get("sensor_spread_angle", 90.0))
 		sen["sensor_offset_y"] = float(sen.get("sensor_offset_y", 0.05))
 		sen["sensor_offset_z"] = float(sen.get("sensor_offset_z", 0.15))

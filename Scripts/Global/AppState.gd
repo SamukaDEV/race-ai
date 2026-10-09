@@ -15,6 +15,7 @@ var temporary_editor_track_data: Dictionary = {}
 
 ## Persistência da pose da câmera do editor entre testes
 var editor_camera_transform: Transform3D = Transform3D()
+var editor_camera_state: Dictionary = {}
 var has_saved_editor_camera: bool = false
 
 

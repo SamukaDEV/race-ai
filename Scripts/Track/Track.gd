@@ -122,6 +122,13 @@ func load_track_from_dict(data: Dictionary) -> bool:
 	return true
 
 
+## Retorna os dados de posição e orientação da câmera salvos nesta pista
+func get_camera_config() -> Dictionary:
+	if current_track_data.has("camera") and current_track_data["camera"] is Dictionary:
+		return current_track_data["camera"]
+	return {}
+
+
 func _clear_current_track() -> void:
 	if _roads_container:
 		for child in _roads_container.get_children():
@@ -162,6 +169,22 @@ func _build_checkpoints_from_data(checkpoints: Array) -> void:
 		)
 
 		_checkpoints_container.add_child(area)
+
+	# Se houver portais de largada com FinishGate físico na pista, conecta ao último checkpoint (FinishLine)
+	_connect_physical_finish_gates()
+
+
+func _connect_physical_finish_gates() -> void:
+	if not _roads_container or total_checkpoints <= 0:
+		return
+	var finish_idx := total_checkpoints - 1
+	for road_piece in _roads_container.get_children():
+		var gate := road_piece.get_node_or_null("FinishGate") as Area3D
+		if gate:
+			gate.body_entered.connect(func(body: Node3D):
+				if body is RaceCar:
+					body.register_checkpoint(finish_idx, total_checkpoints)
+			)
 
 
 func _create_default_checkpoints() -> void:

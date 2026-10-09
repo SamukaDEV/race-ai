@@ -84,10 +84,23 @@ func change_car_profile(profile_id: String) -> void:
 	start_generation()
 
 
+## Reinicia todo o treinamento do zero: população aleatória, geração 1 e recordes zerados
+func restart_training() -> void:
+	current_max_laps = 0
+	all_time_max_laps = 0
+	_is_transitioning = false
+	if population:
+		population.create_initial_population()
+	start_generation()
+	print("🔄 Treinamento reiniciado do zero! Geração #1 iniciada.")
+
+
 func start_generation() -> void:
 	current_max_laps = 0
 	for car in cars:
 		if is_instance_valid(car):
+			if car.get_parent() == self:
+				remove_child(car)
 			car.queue_free()
 	
 	cars.clear()

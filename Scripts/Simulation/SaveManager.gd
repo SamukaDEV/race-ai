@@ -45,6 +45,10 @@ func _get_track_id() -> String:
 	return "default_circuit"
 
 
+const GLOBAL_CHAMPIONS_DIR: String = "user://champions/"
+const GLOBAL_CHAMPIONS_PROJECT_DIR: String = "res://champions/"
+
+
 func get_current_save_dir() -> String:
 	return "user://saves/%s/" % _get_track_id()
 
@@ -57,11 +61,13 @@ func _ensure_track_save_dirs() -> void:
 	var track_id := _get_track_id()
 	var user_data_path := OS.get_user_data_dir()
 	if DirAccess.dir_exists_absolute(user_data_path):
+		DirAccess.make_dir_recursive_absolute(user_data_path + "/champions")
 		DirAccess.make_dir_recursive_absolute(user_data_path + "/saves/" + track_id + "/champions")
 		DirAccess.make_dir_recursive_absolute(user_data_path + "/saves/" + track_id + "/history")
 
 	var res_dir := DirAccess.open("res://")
 	if res_dir:
+		res_dir.make_dir_recursive("champions")
 		res_dir.make_dir_recursive("saves/" + track_id + "/champions")
 		res_dir.make_dir_recursive("saves/" + track_id + "/history")
 
@@ -235,27 +241,36 @@ func export_best_pilot(filepath: String = "") -> bool:
 	_write_text_file(latest_res_path, json_string)
 	_write_text_file(get_current_save_dir() + "best_pilot.json", json_string)
 
+	# 3. Salva cópia no repositório global compartilhado para uso em outras pistas
+	var global_filename := "champion_%s_gen%d_fit%.0f_%s.json" % [_get_track_id(), gen, best.fitness, timestamp_safe]
+	_write_text_file(GLOBAL_CHAMPIONS_DIR + global_filename, json_string)
+	_write_text_file(GLOBAL_CHAMPIONS_PROJECT_DIR + global_filename, json_string)
+
 	var msg := "⭐ Campeão Gen #%d (Fit: %.1f) salvo! (%s)" % [gen, best.fitness, champion_filename]
 	emit_signal("operation_finished", true, msg)
 	print(msg)
 	return true
 
 
-## Lista todos os campeões já exportados desta pista
-func list_exported_champions() -> Array[Dictionary]:
+## Lista todos os campeões (desta pista e globais de outras pistas)
+func list_exported_champions(include_global: bool = true) -> Array[Dictionary]:
 	var list: Array[Dictionary] = []
 	var seen: Dictionary = {}
 	var user_champ_dir := get_current_save_dir() + "champions/"
 	var res_champ_dir := get_current_project_save_dir() + "champions/"
 
-	_scan_champions_dir(user_champ_dir, list, seen)
-	_scan_champions_dir(res_champ_dir, list, seen)
+	_scan_champions_dir(user_champ_dir, list, seen, false)
+	_scan_champions_dir(res_champ_dir, list, seen, false)
+
+	if include_global:
+		_scan_champions_dir(GLOBAL_CHAMPIONS_DIR, list, seen, true)
+		_scan_champions_dir(GLOBAL_CHAMPIONS_PROJECT_DIR, list, seen, true)
 
 	list.sort_custom(func(a, b): return float(a.get("fitness", 0)) > float(b.get("fitness", 0)))
 	return list
 
 
-func _scan_champions_dir(dir_path: String, out_list: Array[Dictionary], seen: Dictionary) -> void:
+func _scan_champions_dir(dir_path: String, out_list: Array[Dictionary], seen: Dictionary, is_global: bool = false) -> void:
 	var dir := DirAccess.open(dir_path)
 	if not dir:
 		return
@@ -276,11 +291,20 @@ func _scan_champions_dir(dir_path: String, out_list: Array[Dictionary], seen: Di
 						"path": full_path,
 						"generation": int(data.get("generation", 0)),
 						"fitness": float(data.get("fitness", 0.0)),
+						"track_id": String(data.get("track_id", "Geral")),
 						"car_profile_id": String(data.get("car_profile_id", "")),
-						"timestamp": String(data.get("timestamp", ""))
+						"timestamp": String(data.get("timestamp", "")),
+						"is_global": is_global
 					})
 		filename = dir.get_next()
 	dir.list_dir_end()
+
+
+## Abre a pasta de campeões no gerenciador de arquivos do sistema (Finder / Explorer)
+func open_champions_folder() -> void:
+	_ensure_track_save_dirs()
+	var global_user_path := ProjectSettings.globalize_path(GLOBAL_CHAMPIONS_DIR)
+	OS.shell_open(global_user_path)
 
 
 ## Importa um piloto campeão para ser a semente evolutiva desta pista

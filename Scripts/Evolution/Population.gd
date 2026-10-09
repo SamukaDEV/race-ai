@@ -8,10 +8,11 @@ extends Node
 var gene_count: int = Genome.DEFAULT_GENE_COUNT
 
 var genomes: Array[Genome] = []
-var generation: int = 0
+var generation: int = 1
 
 func create_initial_population() -> void:
 	genomes.clear()
+	generation = 1
 	
 	for i in range(population_size):
 		var genome: Genome = Genome.new(gene_count)

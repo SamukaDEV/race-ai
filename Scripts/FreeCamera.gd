@@ -110,6 +110,15 @@ func set_camera_transform(t: Transform3D) -> void:
 	rotation.z = 0.0
 
 
+## Permite rotacionar a orientação da câmera diretamente via deltas do mouse (sem capturar/teleportar o cursor)
+func rotate_camera(relative_motion: Vector2) -> void:
+	_yaw -= relative_motion.x * mouse_sensitivity
+	var y_direction: float = 1.0 if invert_y else -1.0
+	_pitch += relative_motion.y * mouse_sensitivity * y_direction
+	_pitch = clamp(_pitch, deg_to_rad(min_pitch), deg_to_rad(max_pitch))
+	rotation = Vector3(_pitch, _yaw, 0.0)
+
+
 func _exit_tree() -> void:
 	_set_mouse_captured(false)
 
@@ -122,12 +131,18 @@ func _update_initial_mouse_state() -> void:
 			_set_mouse_captured(false)
 
 
+var _saved_mouse_pos: Vector2 = Vector2.ZERO
+
 func _set_mouse_captured(capture: bool) -> void:
 	_is_mouse_active = capture
 	if capture:
+		if get_viewport():
+			_saved_mouse_pos = get_viewport().get_mouse_position()
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	else:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		if get_viewport() and _saved_mouse_pos != Vector2.ZERO:
+			get_viewport().warp_mouse(_saved_mouse_pos)
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -55,6 +55,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			if not (f and (f is LineEdit or f is TextEdit or f is SpinBox)):
 				_on_pause_pressed()
 				get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_R:
+			var f := get_viewport().gui_get_focus_owner()
+			if not (f and (f is LineEdit or f is TextEdit or f is SpinBox)):
+				_on_restart_training_pressed()
+				get_viewport().set_input_as_handled()
 
 
 func _build_ui() -> void:
@@ -215,6 +220,14 @@ func _build_ui() -> void:
 	actions_row2.add_theme_constant_override("separation", 6)
 	root_vbox.add_child(actions_row2)
 
+	var btn_restart := Button.new()
+	btn_restart.text = "🔄 Reiniciar [R]"
+	btn_restart.tooltip_text = "Reinicia todo o treinamento do zero com genomas aleatórios (Atalho: R)"
+	btn_restart.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_restart.add_theme_color_override("font_color", Color(1.0, 0.65, 0.3))
+	btn_restart.pressed.connect(_on_restart_training_pressed)
+	actions_row2.add_child(btn_restart)
+
 	var btn_export_best := Button.new()
 	btn_export_best.text = "⭐ Salvar Campeão"
 	btn_export_best.tooltip_text = "Salva o genoma do piloto com maior pontuação em arquivo versionado único"
@@ -326,6 +339,12 @@ func _update_pause_ui(is_p: bool) -> void:
 		_btn_pause.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2) if is_p else Color(1.0, 1.0, 1.0))
 	if _lbl_pause_banner and is_instance_valid(_lbl_pause_banner):
 		_lbl_pause_banner.visible = is_p
+
+
+func _on_restart_training_pressed() -> void:
+	if _simulation and is_instance_valid(_simulation):
+		_simulation.restart_training()
+		show_toast("🔄 Treinamento reiniciado do zero! (Geração #1)")
 
 
 func _on_save_pressed() -> void:
@@ -542,7 +561,7 @@ func _open_champions_modal() -> void:
 	_champions_modal.add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(480, 360)
+	panel.custom_minimum_size = Vector2(540, 380)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.1, 0.15, 0.98)
 	style.set_corner_radius_all(10)
@@ -571,6 +590,16 @@ func _open_champions_modal() -> void:
 	title.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_hbox.add_child(title)
+
+	var btn_folder := Button.new()
+	btn_folder.text = "📂 Pasta Externa"
+	btn_folder.tooltip_text = "Abre a pasta de arquivos JSON de campeões no gerenciador de arquivos do computador (Finder / Explorer)"
+	btn_folder.add_theme_font_size_override("font_size", 11)
+	btn_folder.pressed.connect(func():
+		if _save_manager:
+			_save_manager.open_champions_folder()
+	)
+	header_hbox.add_child(btn_folder)
 
 	var btn_close := Button.new()
 	btn_close.text = "✕"
@@ -616,7 +645,9 @@ func _open_champions_modal() -> void:
 			var gen_txt: int = champ.get("generation", 0)
 			var fit_txt: float = champ.get("fitness", 0.0)
 			var car_id: String = champ.get("car_profile_id", "standard")
-			info_lbl.text = "🏆 Gen #%d • Fit: %.1fm • Carro: %s\n📅 %s" % [gen_txt, fit_txt, car_id, champ.get("timestamp", "")]
+			var track_orig: String = champ.get("track_id", "Geral")
+			var tag_global: String = " 🌐 [Global]" if champ.get("is_global", false) else ""
+			info_lbl.text = "🏆 Gen #%d • Fit: %.1fm • Carro: %s%s\n🏁 Pista: %s | 📅 %s" % [gen_txt, fit_txt, car_id, tag_global, track_orig, champ.get("timestamp", "")]
 			info_lbl.add_theme_font_size_override("font_size", 11)
 			info_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			item_hbox.add_child(info_lbl)

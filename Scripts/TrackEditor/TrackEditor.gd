@@ -19,8 +19,69 @@ const ORDERED_PIECES: Array[String] = [
 	"RoadCrossing"
 ]
 
+## Geometria e dimensões locais exatas das peças Kenney Racing Kit
+const PIECE_DEFINITIONS: Dictionary = {
+	"RoadStraight": {
+		"width": 1.0,
+		"length": 1.0,
+		"local_center": Vector3(0.5, 0.0, -0.5),
+	},
+	"RoadStraightLong": {
+		"width": 1.0,
+		"length": 2.0,
+		"local_center": Vector3(0.5, 0.0, -1.0),
+	},
+	"RoadStart": {
+		"width": 1.0,
+		"length": 2.0,
+		"local_center": Vector3(0.5, 0.0, -1.0),
+	},
+	"RoadStartPositions": {
+		"width": 1.0,
+		"length": 2.0,
+		"local_center": Vector3(0.5, 0.0, -1.0),
+	},
+	"RoadBump": {
+		"width": 1.0,
+		"length": 2.0,
+		"local_center": Vector3(0.5, 0.0, -1.0),
+	},
+	"RoadCornerSmall": {
+		"width": 1.0,
+		"length": 1.0,
+		"local_center": Vector3(0.5, 0.0, -0.5),
+	},
+	"RoadCornerLarge": {
+		"width": 2.0,
+		"length": 2.0,
+		"local_center": Vector3(1.0, 0.0, -1.0),
+	},
+	"RoadCornerLarger": {
+		"width": 3.0,
+		"length": 3.0,
+		"local_center": Vector3(1.5, 0.0, -1.5),
+	},
+	"RoadCrossing": {
+		"width": 2.0,
+		"length": 2.0,
+		"local_center": Vector3(1.0, 0.0, 0.5),
+	},
+}
+
+static func get_piece_local_center(piece_id: String) -> Vector3:
+	if PIECE_DEFINITIONS.has(piece_id):
+		return PIECE_DEFINITIONS[piece_id]["local_center"]
+	return Vector3(0.5, 0.0, -0.5)
+
+static func get_piece_dimensions(piece_id: String) -> Vector2:
+	if PIECE_DEFINITIONS.has(piece_id):
+		var d: Dictionary = PIECE_DEFINITIONS[piece_id]
+		return Vector2(float(d.get("width", 1.0)), float(d.get("length", 1.0)))
+	return Vector2(1.0, 1.0)
+
 @export var grid_size: float = 1.0
 @export var default_track_name: String = "Minha Pista"
+@export var max_placement_distance: float = 45.0 ## Distância máxima para colocação de peças a partir da câmera
 
 @onready var camera: Camera3D = $Camera3D
 @onready var roads_parent: Node3D = $TrackPieces
@@ -35,6 +96,13 @@ var _ghost_node: Node3D = null
 var _hovered_grid_pos: Vector3 = Vector3.ZERO
 var _is_hovering_ground: bool = false
 var _is_mouse_over_ui: bool = false
+var _last_mouse_hit: Vector3 = Vector3.ZERO
+
+# Controle de arrasto com mouse para rotação suave da câmera sem capturar o cursor
+var _rmb_down: bool = false
+var _rmb_dragged: bool = false
+var _rmb_down_pos: Vector2 = Vector2.ZERO
+var _mmb_down: bool = false
 
 # Configurações da simulação e IA associadas à pista
 var current_track_config: Dictionary = {
@@ -91,10 +159,18 @@ func _ready() -> void:
 	_setup_editor_ui()
 	_update_ghost_piece()
 
+	# Configura a câmera no editor para não capturar o mouse no clique direito,
+	# permitindo que o clique direito funcione puramente como ferramenta de apagar/remover blocos
+	# sem mover ou teleportar o cursor para o meio da tela!
+	if camera and camera is FreeCamera:
+		camera.mouse_control_mode = FreeCamera.MouseControlMode.TOGGLE_KEY
+
 	# Restaura a pose da câmera do editor se estiver retornando de um teste
 	var app_state: Node = get_node_or_null("/root/AppState")
 	if app_state and app_state.has_saved_editor_camera and camera:
-		if camera is FreeCamera:
+		if camera.has_method("set_camera_state") and not app_state.editor_camera_state.is_empty():
+			camera.set_camera_state(app_state.editor_camera_state)
+		elif camera is FreeCamera:
 			camera.set_camera_transform(app_state.editor_camera_transform)
 		else:
 			camera.transform = app_state.editor_camera_transform
@@ -114,6 +190,51 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_update_mouse_raycast()
+
+
+func _input(event: InputEvent) -> void:
+	if _is_mouse_over_ui:
+		return
+
+	# Controle de clique e navegação no editor de pistas:
+	# - Botão Direito (Clique rápido sem arrastar): Apaga a peça sob o cursor, NUNCA move ou captura o mouse!
+	# - Botão Direito (Arrasto > 6px): Rotaciona a visualização da câmera livremente sem prender o cursor!
+	# - Botão do Meio (Scroll Click): Rotaciona a câmera via arrasto sem prender o cursor!
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			if event.pressed:
+				_rmb_down = true
+				_rmb_dragged = false
+				_rmb_down_pos = event.position
+				get_viewport().set_input_as_handled()
+			else:
+				get_viewport().set_input_as_handled()
+				if _rmb_down and not _rmb_dragged:
+					# Clique simples sem arrasto: apaga a peça sob o cursor!
+					if _is_hovering_ground:
+						remove_piece_at(_last_mouse_hit)
+				_rmb_down = false
+				_rmb_dragged = false
+		elif event.button_index == MOUSE_BUTTON_MIDDLE:
+			if event.pressed:
+				_mmb_down = true
+				get_viewport().set_input_as_handled()
+			else:
+				_mmb_down = false
+				get_viewport().set_input_as_handled()
+
+	elif event is InputEventMouseMotion:
+		if _rmb_down:
+			if not _rmb_dragged and event.position.distance_to(_rmb_down_pos) > 6.0:
+				_rmb_dragged = true
+			if _rmb_dragged and camera and is_instance_valid(camera):
+				if camera.has_method("rotate_camera"):
+					camera.rotate_camera(event.relative)
+				get_viewport().set_input_as_handled()
+		elif _mmb_down and camera and is_instance_valid(camera):
+			if camera.has_method("rotate_camera"):
+				camera.rotate_camera(event.relative)
+			get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -176,15 +297,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			_update_ghost_transform()
 			if vp:
 				vp.set_input_as_handled()
+		elif event.keycode == KEY_DELETE or event.keycode == KEY_BACKSPACE or event.keycode == KEY_X:
+			if _is_hovering_ground:
+				remove_piece_at(_last_mouse_hit)
+				if vp:
+					vp.set_input_as_handled()
 
-	# Clique do mouse para colocar ou remover peças
+	# Clique esquerdo do mouse para colocar peças
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT and _is_hovering_ground:
 			place_piece_at(_hovered_grid_pos, current_piece_id, current_rotation_y)
-			if vp:
-				vp.set_input_as_handled()
-		elif event.button_index == MOUSE_BUTTON_RIGHT and _is_hovering_ground:
-			remove_piece_at(_hovered_grid_pos)
 			if vp:
 				vp.set_input_as_handled()
 
@@ -256,10 +378,27 @@ func _update_mouse_raycast() -> void:
 	var intersection = ground_plane.intersects_ray(ray_origin, ray_dir)
 
 	if intersection != null:
-		_is_hovering_ground = true
 		var hit: Vector3 = intersection
-		var gx: float = round(hit.x / grid_size) * grid_size
-		var gz: float = round(hit.z / grid_size) * grid_size
+		_last_mouse_hit = hit
+
+		# Valida limite de alcance da câmera para evitar posicionar peças no horizonte fora da visão útil
+		var dist_to_cam := camera.global_position.distance_to(hit)
+		if dist_to_cam > max_placement_distance:
+			_is_hovering_ground = false
+			if _ghost_node and is_instance_valid(_ghost_node):
+				_ghost_node.visible = false
+			return
+
+		_is_hovering_ground = true
+
+		# Alinha o bloco para que o cursor do mouse fique EXATAMENTE NO CENTRO da peça
+		var piece_center := get_piece_local_center(current_piece_id)
+		var rot_basis := Basis(Vector3.UP, deg_to_rad(current_rotation_y))
+		var rotated_center := rot_basis * piece_center
+		var raw_pos := hit - rotated_center
+
+		var gx: float = round(raw_pos.x / grid_size) * grid_size
+		var gz: float = round(raw_pos.z / grid_size) * grid_size
 		_hovered_grid_pos = Vector3(gx, 0.0, gz)
 
 		if _ghost_node and is_instance_valid(_ghost_node):
@@ -337,13 +476,62 @@ func place_piece_at(pos: Vector3, piece_id: String, rot_y: float) -> void:
 	}
 
 
+func find_piece_near(pos: Vector3) -> Dictionary:
+	var direct_key := _grid_key(pos)
+	if placed_pieces.has(direct_key):
+		return placed_pieces[direct_key]
+
+	var best_piece: Dictionary = {}
+	var min_dist_to_center: float = 999999.0
+
+	for p_key in placed_pieces.keys():
+		var p: Dictionary = placed_pieces[p_key]
+		var p_id: String = str(p.get("piece_id", ""))
+		var p_rot: float = float(p.get("rotation_y_deg", 0.0))
+		var p_pos_arr: Array = p.get("position", [0.0, 0.0, 0.0])
+		var p_pos := Vector3(float(p_pos_arr[0]), float(p_pos_arr[1]), float(p_pos_arr[2]))
+
+		var node: Node3D = p.get("node")
+		if node and is_instance_valid(node):
+			p_pos = node.global_position
+
+		var local_center := get_piece_local_center(p_id)
+		var world_center := p_pos + Basis(Vector3.UP, deg_to_rad(p_rot)) * local_center
+		var dims := get_piece_dimensions(p_id)
+
+		var rel := pos - p_pos
+		var inv_basis := Basis(Vector3.UP, deg_to_rad(-p_rot))
+		var local_hit := inv_basis * rel
+
+		var in_bounds := false
+		if p_id == "RoadCrossing":
+			in_bounds = (local_hit.x >= -0.2 and local_hit.x <= dims.x + 0.2 and local_hit.z >= -0.5 - 0.2 and local_hit.z <= 1.5 + 0.2)
+		else:
+			in_bounds = (local_hit.x >= -0.2 and local_hit.x <= dims.x + 0.2 and local_hit.z >= -dims.y - 0.2 and local_hit.z <= 0.2)
+
+		var dist_to_center := Vector2(pos.x - world_center.x, pos.z - world_center.z).length()
+
+		if in_bounds:
+			if dist_to_center < min_dist_to_center:
+				min_dist_to_center = dist_to_center
+				best_piece = p
+		elif best_piece.is_empty():
+			var max_reach: float = maxf(dims.x, dims.y) * 0.75 + 0.5
+			if dist_to_center <= max_reach and dist_to_center < min_dist_to_center:
+				min_dist_to_center = dist_to_center
+				best_piece = p
+
+	return best_piece
+
+
 func remove_piece_at(pos: Vector3) -> void:
-	var key := _grid_key(pos)
-	if placed_pieces.has(key):
-		var piece_info: Dictionary = placed_pieces[key]
+	var piece_info := find_piece_near(pos)
+	if not piece_info.is_empty():
 		var node: Node3D = piece_info.get("node")
 		if node and is_instance_valid(node):
 			node.queue_free()
+		var p_pos_arr: Array = piece_info.get("position", [0.0, 0.0, 0.0])
+		var key := _grid_key(Vector3(float(p_pos_arr[0]), float(p_pos_arr[1]), float(p_pos_arr[2])))
 		placed_pieces.erase(key)
 
 
@@ -388,6 +576,18 @@ func get_track_data() -> Dictionary:
 	# Gera checkpoints automáticos baseados nos cantos e extremos da pista
 	var checkpoints_arr := _generate_checkpoints(pieces_arr, spawn_pos)
 
+	# Captura estado e orientação da câmera no editor
+	var cam_data: Dictionary = {}
+	if camera and is_instance_valid(camera):
+		if camera.has_method("get_camera_state"):
+			cam_data = camera.get_camera_state()
+		else:
+			cam_data = {
+				"position": [camera.global_position.x, camera.global_position.y, camera.global_position.z],
+				"yaw": camera.rotation.y,
+				"pitch": camera.rotation.x
+			}
+
 	return {
 		"track_id": track_id,
 		"track_name": track_name,
@@ -398,6 +598,7 @@ func get_track_data() -> Dictionary:
 			"position": [spawn_pos.x, spawn_pos.y, spawn_pos.z],
 			"rotation_y_deg": spawn_rot
 		},
+		"camera": cam_data,
 		"pieces": pieces_arr,
 		"checkpoints": checkpoints_arr
 	}
@@ -471,6 +672,13 @@ func save_track() -> bool:
 		res_file.store_string(json_str)
 		res_file.close()
 
+	var app_state: Node = get_node_or_null("/root/AppState")
+	if app_state and camera and is_instance_valid(camera):
+		if camera.has_method("get_camera_state"):
+			app_state.editor_camera_state = camera.get_camera_state()
+		app_state.editor_camera_transform = camera.transform
+		app_state.has_saved_editor_camera = true
+
 	_show_toast("✅ Pista [%s] salva com sucesso!" % data["track_name"])
 	return true
 
@@ -503,6 +711,14 @@ func load_track_from_dict(data: Dictionary) -> bool:
 		var pos_arr: Array = p_info.get("position", [0.0, 0.0, 0.0])
 		var rot: float = float(p_info.get("rotation_y_deg", 0.0))
 		place_piece_at(Vector3(pos_arr[0], pos_arr[1], pos_arr[2]), p_id, rot)
+
+	if data.has("camera") and camera and is_instance_valid(camera):
+		if camera.has_method("set_camera_state") and data["camera"] is Dictionary:
+			camera.set_camera_state(data["camera"])
+		elif data["camera"] is Dictionary and data["camera"].has("position"):
+			var p: Array = data["camera"]["position"]
+			if p.size() >= 3:
+				camera.global_position = Vector3(float(p[0]), float(p[1]), float(p[2]))
 
 	return true
 
@@ -551,6 +767,8 @@ func test_in_simulation() -> void:
 		if app_state.has_method("set_current_car_profile"):
 			app_state.set_current_car_profile(current_track_config.get("car_profile_id", "standard"))
 		if camera:
+			if camera.has_method("get_camera_state"):
+				app_state.editor_camera_state = camera.get_camera_state()
 			app_state.editor_camera_transform = camera.transform
 			app_state.has_saved_editor_camera = true
 
