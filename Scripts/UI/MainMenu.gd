@@ -83,7 +83,10 @@ func _ensure_car_profile_selector() -> void:
 	btn_edit_prof.text = "✏️ Editar"
 	btn_edit_prof.add_theme_font_size_override("font_size", 11)
 	btn_edit_prof.pressed.connect(func():
-		CarProfileModal.open_modal(self, func(_id): _populate_car_profiles_in_selector())
+		var curr_id := ""
+		if _opt_main_car_profile and _opt_main_car_profile.selected >= 0:
+			curr_id = _opt_main_car_profile.get_item_metadata(_opt_main_car_profile.selected)
+		CarProfileModal.open_modal(self, func(_id): _populate_car_profiles_in_selector(), curr_id)
 	)
 	selector_row.add_child(btn_edit_prof)
 

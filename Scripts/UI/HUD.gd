@@ -126,6 +126,13 @@ func _build_ui() -> void:
 	_opt_car_profile.item_selected.connect(_on_car_profile_selected)
 	car_select_box.add_child(_opt_car_profile)
 
+	var btn_edit_car := Button.new()
+	btn_edit_car.text = "✏️ Editar"
+	btn_edit_car.tooltip_text = "Editar configurações ou criar novos perfis de carros"
+	btn_edit_car.add_theme_font_size_override("font_size", 11)
+	btn_edit_car.pressed.connect(_open_car_profiles_modal)
+	car_select_box.add_child(btn_edit_car)
+
 	# --- DESTAQUE DE VOLTAS (LAPS) ---
 	var laps_box := HBoxContainer.new()
 	laps_box.add_theme_constant_override("separation", 8)
@@ -482,6 +489,38 @@ func _update_header_text() -> void:
 	var track_display_name: String = app_state.current_track_name if app_state else "Circuito Padrão"
 	var car_prof_name: String = app_state.current_car_profile_name if app_state else "Padrão"
 	_header_label.text = "🏁 %s\n🏎️ PERFIL: %s" % [track_display_name.to_upper(), car_prof_name.to_upper()]
+
+
+## Abre o editor/gerenciador de perfis de carros diretamente da simulação
+func _open_car_profiles_modal() -> void:
+	var was_paused := false
+	if _simulation and is_instance_valid(_simulation):
+		was_paused = _simulation.is_simulation_paused
+		if not was_paused:
+			_simulation.set_simulation_paused(true)
+			_update_pause_ui(true)
+
+	var app_state: Node = get_node_or_null("/root/AppState")
+	var curr_prof: String = app_state.current_car_profile_id if app_state else "standard"
+	if _opt_car_profile and _opt_car_profile.selected >= 0:
+		curr_prof = _opt_car_profile.get_item_metadata(_opt_car_profile.selected)
+
+	var modal := CarProfileModal.open_modal(self, func(saved_id: String):
+		_populate_car_profiles_dropdown()
+		if _simulation and is_instance_valid(_simulation):
+			_simulation.change_car_profile(saved_id)
+		_update_header_text()
+		var prof_data := CarProfileManager.get_profile(saved_id)
+		show_toast("🏎️ Perfil [%s] aplicado! Reiniciando geração..." % prof_data.get("name", saved_id))
+	, curr_prof)
+
+	modal.closed.connect(func():
+		_populate_car_profiles_dropdown()
+		_update_header_text()
+		if not was_paused and _simulation and is_instance_valid(_simulation):
+			_simulation.set_simulation_paused(false)
+			_update_pause_ui(false)
+	)
 
 
 ## Abre modal interativo listando o histórico de pilotos campeões salvos

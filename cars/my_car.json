@@ -3,15 +3,15 @@
 	"name": "My Car",
 	"physics": {
 		"acceleration": 10.0,
-		"brake_force": 25.0,
-		"max_speed": 100.0,
-		"steering_speed": 100.0
+		"brake_force": 10.0,
+		"max_speed": 20.0,
+		"steering_speed": 50.0
 	},
 	"sensors": {
-		"sensor_count": 5,
+		"sensor_count": 8,
 		"sensor_offset_y": 0.05,
 		"sensor_offset_z": 0.15,
-		"sensor_range": 0.8,
+		"sensor_range": 1.5,
 		"sensor_spread_angle": 90.0
 	}
 }

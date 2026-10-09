@@ -1131,7 +1131,21 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	btn_edit_profiles.text = "✏️ Gerenciar Perfis"
 	btn_edit_profiles.add_theme_font_size_override("font_size", 10)
 	btn_edit_profiles.pressed.connect(func():
-		CarProfileModal.open_modal(self, func(_id): _refresh_editor_car_profiles())
+		if _settings_modal:
+			_settings_modal.visible = false
+		var curr_id := ""
+		if _cfg_opt_car_profile and _cfg_opt_car_profile.selected >= 0:
+			curr_id = _cfg_opt_car_profile.get_item_metadata(_cfg_opt_car_profile.selected)
+		var modal := CarProfileModal.open_modal(self, func(saved_id: String):
+			if saved_id != "":
+				current_track_config["car_profile_id"] = saved_id
+			_refresh_editor_car_profiles(saved_id)
+		, curr_id)
+		modal.closed.connect(func():
+			_refresh_editor_car_profiles()
+			if _settings_modal:
+				_settings_modal.visible = true
+		)
 	)
 	prof_hbox.add_child(btn_edit_profiles)
 	grid.add_child(prof_hbox)
@@ -1167,12 +1181,12 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	actions_hbox.add_child(btn_close)
 
 
-func _refresh_editor_car_profiles() -> void:
+func _refresh_editor_car_profiles(preferred_id: String = "") -> void:
 	if not _cfg_opt_car_profile:
 		return
 	_cfg_opt_car_profile.clear()
 	var profiles := CarProfileManager.list_profiles()
-	var active_id: String = current_track_config.get("car_profile_id", "standard")
+	var active_id: String = preferred_id if preferred_id != "" else current_track_config.get("car_profile_id", "standard")
 	var sel_idx := 0
 
 	for i in range(profiles.size()):
@@ -1183,6 +1197,8 @@ func _refresh_editor_car_profiles() -> void:
 			sel_idx = i
 
 	_cfg_opt_car_profile.select(sel_idx)
+	if _cfg_opt_car_profile.get_item_count() > 0:
+		current_track_config["car_profile_id"] = _cfg_opt_car_profile.get_item_metadata(sel_idx)
 
 
 func _open_settings_modal() -> void:

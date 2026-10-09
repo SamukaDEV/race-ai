@@ -29,24 +29,54 @@ var _status_label: Label
 var _current_editing_id: String = "standard"
 
 
-static func open_modal(parent: Node, on_saved: Callable = Callable()) -> CarProfileModal:
+var initial_profile_id: String = ""
+
+
+static func open_modal(parent: Node, on_saved: Callable = Callable(), initial_id: String = "") -> CarProfileModal:
+	var canvas_layer := CanvasLayer.new()
+	canvas_layer.layer = 120
 	var modal := CarProfileModal.new()
+	modal.initial_profile_id = initial_id
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	parent.add_child(modal)
+	canvas_layer.add_child(modal)
+	parent.add_child(canvas_layer)
+
+	modal.tree_exited.connect(func():
+		if is_instance_valid(canvas_layer):
+			canvas_layer.queue_free()
+	)
+
 	if on_saved.is_valid():
 		modal.profile_saved.connect(on_saved)
 	return modal
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	_build_ui()
-	_load_profile_into_ui("standard")
+	var prof_to_load := initial_profile_id
+	if prof_to_load == "":
+		var app_state = get_node_or_null("/root/AppState")
+		if app_state and "current_car_profile_id" in app_state and app_state.current_car_profile_id != "":
+			prof_to_load = app_state.current_car_profile_id
+		else:
+			prof_to_load = "standard"
+	_load_profile_into_ui(prof_to_load)
+	_refresh_profiles_dropdown()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			_close()
+			get_viewport().set_input_as_handled()
 
 
 func _build_ui() -> void:
 	var dimmer := ColorRect.new()
 	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dimmer.color = Color(0.02, 0.03, 0.06, 0.8)
+	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(dimmer)
 
 	var center := CenterContainer.new()
