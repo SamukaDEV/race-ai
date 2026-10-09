@@ -82,9 +82,9 @@ func _physics_process(delta: float) -> void:
 	
 	var outputs := neural_network.forward(inputs)
 	
-	#var gas := outputs[0]
-	var gas := (outputs[0] + 1.0) * 0.5 # Transforma [-1.0, 1.0] em [0.0, 1.0] (sempre anda para frente)
-	var steer := outputs[1]
+	# outputs[0] em [-1.0, 1.0]: positivo acelera, negativo freia ativamente
+	var gas: float = outputs[0]
+	var steer: float = outputs[1]
 	
 	apply_controls(gas, steer, delta)
 	
@@ -112,22 +112,27 @@ func _physics_process(delta: float) -> void:
 			idle_timer = 0.0
 	
 func apply_controls(gas: float, steer: float, delta: float) -> void:
-	# Aceleração / freio
-	
-	if gas > 0.0:
+	# 1. Aceleração / Freio
+	if gas >= 0.0:
 		speed_value += gas * acceleration * delta
 	else:
-		speed_value += gas * brake_force * delta
+		speed_value -= abs(gas) * brake_force * delta
 	
 	speed_value = clamp(speed_value, 0.0, max_speed)
 	
-	# Direção
+	# 2. Direção (Abordagem 1: Agilidade Inversa à Velocidade)
+	# Impede que o carro gire parado no lugar (atinge 100% de manobrabilidade a partir de 15.0 de velocidade)
+	var motion_factor: float = clamp(speed_value / 15.0, 0.0, 1.0)
+	var speed_ratio: float = speed_value / max_speed if max_speed > 0.0 else 0.0
 	
-	var steering_amount: float = steer * steering_speed * delta * (speed_value / max_speed)
+	# Em baixa velocidade: 1.4x de curva (muito ágil para contornar curvas fechadas)
+	# Em alta velocidade: 0.7x de curva (estável e controlável nas retas)
+	var turn_agility: float = lerp(1.4, 0.7, speed_ratio)
+	
+	var steering_amount: float = steer * steering_speed * delta * motion_factor * turn_agility
 	rotate_y(steering_amount)
 	
-	# Movimento
-	
+	# 3. Movimento
 	var forward: Vector3 = global_transform.basis.z
 	
 	velocity.x = forward.x * speed_value
