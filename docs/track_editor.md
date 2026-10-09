@@ -54,7 +54,10 @@ O botão **"⚙️ Configurações"** na barra superior do editor abre um modal 
 * **Taxa de Mutação (`mutation_rate`)**: Percentual de probabilidade de mutação em cada gene (padrão 5%).
 * **Força da Mutação (`mutation_power`)**: Magnitude da perturbação gaussiana dos pesos neurais (padrão 0.20).
 * **Elitismo (`elite_count`)**: Quantidade de melhores pilotos clonados integralmente para a próxima geração.
-* **Velocidade Máxima dos Veículos (`max_speed`)**: Limite de velocidade física dos carros (padrão 300).
+* **Velocidade Máxima dos Veículos (`max_speed`)**: Limite de velocidade física dos carros (mínimo destravado a partir de $10.0$ até $1000.0$).
+* **Aceleração do Motor (`acceleration`)**: Taxa de aumento de velocidade por segundo ($10.0$ a $1000.0$, padrão $200.0$).
+* **Força dos Freios (`brake_force`)**: Intensidade de desaceleração dos veículos ($10.0$ a $600.0$, padrão $100.0$).
+* **Velocidade de Esterçamento (`steering_speed`)**: Agilidade de rotação e curva do volante ($0.5$ a $10.0$, padrão $2.5$).
 
 ---
 
@@ -73,9 +76,27 @@ As pistas são serializadas em arquivos **JSON estruturados** gravados simultane
 
 ---
 
-## 🏎️ Teste Imediato na Simulação
+---
 
-Clicar no botão **"🏎️ Testar Simulação"** na barra superior do editor:
-1. Salva automaticamente a pista desenhada com suas configurações.
-2. Configura a pista e os dados de teste no singleton global `AppState`.
-3. Abre a cena do simulador (`MainScene.tscn`) com os carros já alinhados nas vagas reais e treinando no novo circuito.
+## 🎨 Interface e Usabilidade do Editor
+
+A interface do editor foi projetada para máxima ergonomia e integração com a visualização 3D:
+
+* **Barra Superior Compacta**: Acesso rápido a `Nome da Pista`, `💾 Salvar`, `📂 Carregar`, `⚙️ Configs`, `🧹 Limpar`, `🏎️ Testar` e `🏠 Menu`.
+* **Sidebar Vertical na Lateral Esquerda**:
+  - Lista vertical completa com as peças modulares disponíveis e indicador visual da peça ativa destacada em verde fluorescente.
+  - **Miniaturas Procedurais 2D**: Cada botão exibe um ícone renderizado sob medida (asfalto, zebras vermelhas, linhas tracejadas, grelha amarela de largada, etc.) gerado em tempo de execução sem dependência de assets externos.
+* **Isolamento de Entrada & Foco de Câmera**:
+  - Quando o usuário digita no campo `Nome` ou em qualquer campo numérico (`SpinBox`), os atalhos de voo da câmera (`WASD`, `Espaço`, `Shift`) são automaticamente suspensos para evitar movimentação indesejada da cena 3D.
+  - Ao pressionar `Enter`, `Esc` ou clicar com o botão esquerdo/direito na tela 3D, o foco do campo de texto é desativado imediatamente, restabelecendo o controle da câmera.
+* **Barra Inferior de Dicas**: Rodapé compacto resumindo os atalhos do mouse e teclado.
+
+---
+
+## 🏎️ Teste Imediato na Simulação & Retorno ao Editor
+
+O fluxo de teste e iteração da pista funciona de forma contínua:
+1. No editor, clicar em **"🏎️ Testar"** salva a pista atual com suas configurações no singleton `AppState` e transiciona diretamente para a cena de simulação (`MainScene.tscn`).
+2. Durante a simulação, o HUD exibe o botão **"🛠️ Editor"** ao lado de "🏠 Menu".
+3. Ao clicar em **"🛠️ Editor"**, o simulador redireciona de volta para `TrackEditor.tscn`, restaurando imediatamente em memória todas as peças colocadas, configurações e nome da pista, permitindo refinar o traçado sem precisar recarregar arquivos ou voltar pelo menu principal.
+

@@ -74,7 +74,8 @@ func _build_ui() -> void:
 	panel.add_child(root_vbox)
 
 	# --- CABEÇALHO ---
-	var track_display_name := AppState.current_track_name if AppState else "Circuito Padrão"
+	var app_state: Node = get_node_or_null("/root/AppState")
+	var track_display_name: String = app_state.current_track_name if app_state else "Circuito Padrão"
 	var header := Label.new()
 	header.text = "🏁 %s" % track_display_name.to_upper()
 	header.add_theme_font_size_override("font_size", 14)
@@ -172,6 +173,14 @@ func _build_ui() -> void:
 	btn_menu.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_menu.pressed.connect(func(): get_tree().change_scene_to_file("res://Levels/MainMenu.tscn"))
 	actions_row2.add_child(btn_menu)
+
+	var btn_editor := Button.new()
+	btn_editor.text = "🛠️ Editor"
+	btn_editor.tooltip_text = "Volta a editar a pista no Editor de Pistas 3D"
+	btn_editor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_editor.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
+	btn_editor.pressed.connect(func(): get_tree().change_scene_to_file("res://Levels/TrackEditor.tscn"))
+	actions_row2.add_child(btn_editor)
 
 	var separator4 := HSeparator.new()
 	root_vbox.add_child(separator4)

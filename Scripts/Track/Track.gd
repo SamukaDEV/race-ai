@@ -125,10 +125,12 @@ func load_track_from_dict(data: Dictionary) -> bool:
 func _clear_current_track() -> void:
 	if _roads_container:
 		for child in _roads_container.get_children():
+			_roads_container.remove_child(child)
 			child.queue_free()
 
 	if _checkpoints_container:
 		for child in _checkpoints_container.get_children():
+			_checkpoints_container.remove_child(child)
 			child.queue_free()
 
 
@@ -199,6 +201,8 @@ func get_spawn_points() -> Array[Transform3D]:
 
 	var pieces_with_spawns: Array[Node3D] = []
 	for child in _roads_container.get_children():
+		if child.is_queued_for_deletion():
+			continue
 		if child is Node3D and child.has_node("SpawnPoints"):
 			pieces_with_spawns.append(child)
 
@@ -206,12 +210,14 @@ func get_spawn_points() -> Array[Transform3D]:
 		return collected_transforms
 
 	for piece in pieces_with_spawns:
-		var piece_t: Transform3D = piece.global_transform if piece.is_inside_tree() else piece.transform
+		if piece.is_queued_for_deletion():
+			continue
+		piece.force_update_transform()
 		var sp_node: Node = piece.get_node("SpawnPoints")
 		for sp_child in sp_node.get_children():
 			if sp_child is Marker3D:
-				var m_t: Transform3D = piece_t * sp_child.transform
-				collected_transforms.append(m_t)
+				sp_child.force_update_transform()
+				collected_transforms.append(sp_child.global_transform)
 
 	if collected_transforms.is_empty():
 		return collected_transforms

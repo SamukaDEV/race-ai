@@ -102,6 +102,14 @@ func _ready() -> void:
 		_update_initial_mouse_state()
 
 
+## Define o transform da câmera e sincroniza os ângulos internos de rotação
+func set_camera_transform(t: Transform3D) -> void:
+	transform = t
+	_yaw = rotation.y
+	_pitch = rotation.x
+	rotation.z = 0.0
+
+
 func _exit_tree() -> void:
 	_set_mouse_captured(false)
 
@@ -153,9 +161,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Modos de segurar botão para olhar
 		if mouse_control_mode == MouseControlMode.HOLD_RIGHT_CLICK and event.button_index == MOUSE_BUTTON_RIGHT:
 			_set_mouse_captured(event.pressed)
+			if event.pressed:
+				var f := get_viewport().gui_get_focus_owner()
+				if f:
+					f.release_focus()
 			return
 		elif mouse_control_mode == MouseControlMode.HOLD_LEFT_CLICK and event.button_index == MOUSE_BUTTON_LEFT:
 			_set_mouse_captured(event.pressed)
+			if event.pressed:
+				var f := get_viewport().gui_get_focus_owner()
+				if f:
+					f.release_focus()
 			return
 
 	# Movimento do mouse para rotacionar câmera
@@ -170,6 +186,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	if not active:
+		return
+
+	# Não processa movimentação por teclado se algum campo de texto/UI tiver o foco
+	var focus_owner: Control = get_viewport().gui_get_focus_owner()
+	if focus_owner and (focus_owner is LineEdit or focus_owner is TextEdit or focus_owner is SpinBox):
+		_current_velocity = Vector3.ZERO
 		return
 
 	var forward_back := 0.0

@@ -13,6 +13,10 @@ var current_track_name: String = "Circuito Padrão"
 var is_testing_editor_track: bool = false
 var temporary_editor_track_data: Dictionary = {}
 
+## Persistência da pose da câmera do editor entre testes
+var editor_camera_transform: Transform3D = Transform3D()
+var has_saved_editor_camera: bool = false
+
 
 func set_current_track(id: String, track_name: String = "") -> void:
 	current_track_id = id

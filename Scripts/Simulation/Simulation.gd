@@ -100,6 +100,12 @@ func start_generation() -> void:
 		# Aplica configurações específicas do carro
 		if track_cfg.has("max_speed"):
 			car.max_speed = float(track_cfg["max_speed"])
+		if track_cfg.has("acceleration"):
+			car.acceleration = float(track_cfg["acceleration"])
+		if track_cfg.has("brake_force"):
+			car.brake_force = float(track_cfg["brake_force"])
+		if track_cfg.has("steering_speed"):
+			car.steering_speed = float(track_cfg["steering_speed"])
 		if track_cfg.has("max_idle_time"):
 			car.max_idle_time = float(track_cfg["max_idle_time"])
 		if track_cfg.has("enable_idle_timeout"):
