@@ -175,15 +175,14 @@ func _build_checkpoints_from_data(checkpoints: Array) -> void:
 
 
 func _connect_physical_finish_gates() -> void:
-	if not _roads_container or total_checkpoints <= 0:
+	if not _roads_container:
 		return
-	var finish_idx := total_checkpoints - 1
 	for road_piece in _roads_container.get_children():
 		var gate := road_piece.get_node_or_null("FinishGate") as Area3D
 		if gate:
 			gate.body_entered.connect(func(body: Node3D):
 				if body is RaceCar:
-					body.register_checkpoint(finish_idx, total_checkpoints)
+					body.complete_lap()
 			)
 
 

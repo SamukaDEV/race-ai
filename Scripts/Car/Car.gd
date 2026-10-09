@@ -35,6 +35,8 @@ var best_lap_time: float = 9999.0
 var steer_smooth: float = 0.0
 var oscillation_penalty: float = 0.0
 var lap_time_bonus: float = 0.0
+var last_lap_distance: float = 0.0
+var _lap_cooldown: float = 0.0
 
 
 ## Aplica as configurações do perfil de carro à física e aos sensores
@@ -81,6 +83,8 @@ func _physics_process(delta: float) -> void:
 	var sensor_values: PackedFloat32Array = sensors.update_sensors()
 	
 	current_lap_time += delta
+	if _lap_cooldown > 0.0:
+		_lap_cooldown -= delta
 	
 	var inputs: PackedFloat32Array = PackedFloat32Array()
 	inputs.resize(sensor_values.size() + 2)
@@ -191,28 +195,50 @@ func get_fitness() -> float:
 	var fit: float = distance_traveled + (laps * 1000.0) + lap_time_bonus - oscillation_penalty
 	return max(0.1, fit)
 
-## Registra a passagem por um checkpoint na ordem correta
+## Chamado diretamente quando o carro atinge o trigger Area3D do portal de início (RoadStart)
+func complete_lap() -> void:
+	if not alive:
+		return
+	
+	# Cooldown de 1.0s para evitar múltiplos disparos enquanto atravessa o volume do portal
+	if _lap_cooldown > 0.0:
+		return
+	
+	_lap_cooldown = 1.0
+	laps += 1
+	last_lap_distance = distance_traveled
+	
+	# Bônus inversamente proporcional ao tempo gasto nesta volta
+	var bonus: float = max(0.0, 30.0 - current_lap_time) * 40.0
+	lap_time_bonus += bonus
+	best_lap_time = min(best_lap_time, current_lap_time) if best_lap_time < 9000.0 else current_lap_time
+	current_lap_time = 0.0
+	
+	emit_signal("lap_completed", self, laps)
+	update_car_label()
+
+
+func complete_lap_gate(_min_d: float = 0.0, _min_t: float = 0.0) -> bool:
+	complete_lap()
+	return true
+
+
+## Registra a passagem por um checkpoint ou linha de chegada
 func register_checkpoint(checkpoint_idx: int, total_checkpoints: int) -> bool:
 	if not alive:
 		return false
 	
+	# Se atingir o último checkpoint (FinishLine), contabiliza o LAP diretamente
+	if total_checkpoints > 0 and checkpoint_idx == total_checkpoints - 1:
+		complete_lap()
+		return true
+
 	if checkpoint_idx == current_checkpoint_index:
 		current_checkpoint_index += 1
-		# Se completou toda a sequência de checkpoints até a linha de chegada
-		if current_checkpoint_index >= total_checkpoints:
-			laps += 1
-			current_checkpoint_index = 0
-			# Bônus inversamente proporcional ao tempo gasto nesta volta
-			# Quanto mais rápida e limpa a volta, maior a recompensa
-			var bonus: float = max(0.0, 30.0 - current_lap_time) * 40.0
-			lap_time_bonus += bonus
-			best_lap_time = min(best_lap_time, current_lap_time)
-			current_lap_time = 0.0
-			
-			emit_signal("lap_completed", self, laps)
-			update_car_label()
-			return true
+	elif checkpoint_idx > current_checkpoint_index:
+		current_checkpoint_index = checkpoint_idx + 1
 	return false
+
 
 func update_car_label() -> void:
 	if alive:

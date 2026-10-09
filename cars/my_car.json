@@ -2,9 +2,9 @@
 	"id": "my_car",
 	"name": "My Car",
 	"physics": {
-		"acceleration": 5.0,
-		"brake_force": 10.0,
-		"max_speed": 30.0,
+		"acceleration": 3.0,
+		"brake_force": 7.0,
+		"max_speed": 50.0,
 		"steering_speed": 30.0
 	},
 	"sensors": {

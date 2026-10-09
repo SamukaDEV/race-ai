@@ -2,16 +2,16 @@
 	"id": "standard",
 	"name": "Padrão",
 	"physics": {
-		"max_speed": 300.0,
-		"acceleration": 200.0,
-		"brake_force": 100.0,
-		"steering_speed": 2.5
+		"acceleration": 3.0,
+		"brake_force": 7.0,
+		"max_speed": 50.0,
+		"steering_speed": 30.0
 	},
 	"sensors": {
 		"sensor_count": 5,
-		"sensor_range": 1.5,
-		"sensor_spread_angle": 90.0,
 		"sensor_offset_y": 0.05,
-		"sensor_offset_z": 0.15
+		"sensor_offset_z": 0.15,
+		"sensor_range": 0.9,
+		"sensor_spread_angle": 90.0
 	}
 }

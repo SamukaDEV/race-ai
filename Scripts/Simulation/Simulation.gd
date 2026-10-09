@@ -197,6 +197,7 @@ func _physics_process(_delta: float) -> void:
 		return
 	
 	var all_dead := true
+	var max_l := 0
 	
 	for i in range(cars.size()):
 		var car: RaceCar = cars[i]
@@ -205,7 +206,14 @@ func _physics_process(_delta: float) -> void:
 		if car.alive:
 			all_dead = false
 		
+		if car.laps > max_l:
+			max_l = car.laps
+		
 		population.genomes[i].fitness = car.get_fitness()
+	
+	if max_l > current_max_laps:
+		current_max_laps = max_l
+		all_time_max_laps = max(all_time_max_laps, max_l)
 		
 	if all_dead:
 		finish_generation()

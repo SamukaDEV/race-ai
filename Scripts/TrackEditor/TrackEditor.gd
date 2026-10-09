@@ -618,29 +618,34 @@ func _generate_checkpoints(pieces: Array, spawn_pos: Vector3) -> Array:
 	if pieces.is_empty():
 		return []
 
-	# Encontra extremos do circuito (norte, sul, leste, oeste)
-	var min_x := 999999.0
-	var max_x := -999999.0
-	var min_z := 999999.0
-	var max_z := -999999.0
-
+	# Filtra apenas peças válidas dentro da área de construção (raio < 200m)
+	var valid_pieces: Array = []
 	for p in pieces:
-		var pos: Array = p["position"]
-		min_x = min(min_x, pos[0])
-		max_x = max(max_x, pos[0])
-		min_z = min(min_z, pos[2])
-		max_z = max(max_z, pos[2])
+		var pos_arr: Array = p.get("position", [0.0, 0.0, 0.0])
+		if abs(float(pos_arr[0])) < 200.0 and abs(float(pos_arr[2])) < 200.0:
+			valid_pieces.append(p)
 
-	var mid_x := (min_x + max_x) * 0.5
-	var mid_z := (min_z + max_z) * 0.5
+	if valid_pieces.is_empty():
+		valid_pieces = pieces
 
-	# Cria 4 checkpoints cardeais ao longo dos quadrantes
-	return [
-		{ "position": [max_x, 0.5, mid_z], "size": [3.0, 2.0, 3.0], "name": "Sector_1" },
-		{ "position": [mid_x, 0.5, max_z], "size": [3.0, 2.0, 3.0], "name": "Sector_2" },
-		{ "position": [min_x, 0.5, mid_z], "size": [3.0, 2.0, 3.0], "name": "Sector_3" },
-		{ "position": [spawn_pos.x, 0.5, spawn_pos.z], "size": [3.5, 2.0, 2.0], "name": "FinishLine" }
-	]
+	# Se houver peças suficientes na pista, distribui setores intermediários sobre peças REAIS da pista
+	var checkpoints: Array = []
+	if valid_pieces.size() >= 4:
+		var p1: Dictionary = valid_pieces[int(valid_pieces.size() * 0.25)]
+		var p2: Dictionary = valid_pieces[int(valid_pieces.size() * 0.50)]
+		var p3: Dictionary = valid_pieces[int(valid_pieces.size() * 0.75)]
+
+		var pos1: Array = p1.get("position", [0.0, 0.0, 0.0])
+		var pos2: Array = p2.get("position", [0.0, 0.0, 0.0])
+		var pos3: Array = p3.get("position", [0.0, 0.0, 0.0])
+
+		checkpoints.append({ "position": [pos1[0], 0.5, pos1[2]], "size": [3.5, 2.5, 3.5], "name": "Sector_1" })
+		checkpoints.append({ "position": [pos2[0], 0.5, pos2[2]], "size": [3.5, 2.5, 3.5], "name": "Sector_2" })
+		checkpoints.append({ "position": [pos3[0], 0.5, pos3[2]], "size": [3.5, 2.5, 3.5], "name": "Sector_3" })
+
+	# FinishLine é sempre posicionada sobre a linha/local de largada
+	checkpoints.append({ "position": [spawn_pos.x, 0.5, spawn_pos.z], "size": [4.0, 2.5, 3.0], "name": "FinishLine" })
+	return checkpoints
 
 
 ## Salva a pista atual em arquivo JSON em user://tracks/ e res://tracks/

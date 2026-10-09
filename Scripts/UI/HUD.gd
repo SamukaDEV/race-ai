@@ -50,7 +50,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_F6:
 			_on_load_pressed()
 			get_viewport().set_input_as_handled()
-		elif event.keycode == KEY_P or event.keycode == KEY_SPACE:
+		elif event.keycode == KEY_P:
 			var f := get_viewport().gui_get_focus_owner()
 			if not (f and (f is LineEdit or f is TextEdit or f is SpinBox)):
 				_on_pause_pressed()
@@ -654,6 +654,7 @@ func _open_champions_modal() -> void:
 
 			var btn_import := Button.new()
 			btn_import.text = "Usar como Semente"
+			btn_import.tooltip_text = "Carrega os genes deste piloto campeão para a geração atual"
 			btn_import.add_theme_font_size_override("font_size", 11)
 			var c_path: String = champ.get("path", "")
 			btn_import.pressed.connect(func():
@@ -662,3 +663,15 @@ func _open_champions_modal() -> void:
 					_champions_modal.queue_free()
 			)
 			item_hbox.add_child(btn_import)
+
+			var btn_delete := Button.new()
+			btn_delete.text = "🗑️"
+			btn_delete.tooltip_text = "Excluir este campeão do histórico"
+			btn_delete.add_theme_font_size_override("font_size", 11)
+			btn_delete.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+			btn_delete.pressed.connect(func():
+				if _save_manager:
+					_save_manager.delete_champion(c_path)
+					_open_champions_modal()
+			)
+			item_hbox.add_child(btn_delete)

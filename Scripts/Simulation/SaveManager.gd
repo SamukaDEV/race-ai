@@ -307,6 +307,48 @@ func open_champions_folder() -> void:
 	OS.shell_open(global_user_path)
 
 
+## Exclui um piloto campeão salvo no disco (user:// e res://)
+func delete_champion(filepath: String) -> bool:
+	if filepath == "":
+		return false
+
+	var fname := filepath.get_file()
+	var removed_any := false
+
+	# 1. Remove o arquivo indicado
+	if FileAccess.file_exists(filepath):
+		var err := DirAccess.remove_absolute(filepath)
+		if err == OK:
+			removed_any = true
+
+	# 2. Tenta remover correspondente em res:// se o caminho for user://
+	if filepath.begins_with("user://"):
+		var res_path := filepath.replace("user://", "res://")
+		if FileAccess.file_exists(res_path):
+			DirAccess.remove_absolute(res_path)
+
+	# 3. Tenta remover no repositório global e no local da pista por redundância
+	var global_user := GLOBAL_CHAMPIONS_DIR + fname
+	var global_res := GLOBAL_CHAMPIONS_PROJECT_DIR + fname
+	var track_user := get_current_save_dir() + "champions/" + fname
+	var track_res := get_current_project_save_dir() + "champions/" + fname
+
+	for p in [global_user, global_res, track_user, track_res]:
+		if FileAccess.file_exists(p):
+			DirAccess.remove_absolute(p)
+			removed_any = true
+
+	if removed_any:
+		var msg := "🗑️ Campeão [%s] excluído com sucesso!" % fname
+		emit_signal("operation_finished", true, msg)
+		print(msg)
+		return true
+	else:
+		var err_msg := "⚠️ Não foi possível encontrar o arquivo para exclusão: %s" % fname
+		emit_signal("operation_finished", false, err_msg)
+		return false
+
+
 ## Importa um piloto campeão para ser a semente evolutiva desta pista
 func import_best_pilot(filepath: String = "") -> bool:
 	if not _simulation or not _simulation.population:
