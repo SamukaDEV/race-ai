@@ -34,8 +34,15 @@ func _ready() -> void:
 	if track_cfg.has("population_size") and int(track_cfg["population_size"]) > 0:
 		population_size = int(track_cfg["population_size"])
 
+	var active_prof := get_active_car_profile()
+	var sensor_cnt: int = int(active_prof.get("sensor_count", 5))
+	var expected_inputs: int = sensor_cnt + 2
+	var expected_genes: int = NeuralNetwork.get_gene_count_for_inputs(expected_inputs)
+
 	population = Population.new()
 	population.population_size = population_size
+	population.gene_count = expected_genes
+
 	if track_cfg.has("mutation_rate"):
 		population.mutation_rate = float(track_cfg["mutation_rate"])
 	if track_cfg.has("mutation_power"):
@@ -46,6 +53,36 @@ func _ready() -> void:
 	add_child(population)
 	population.create_initial_population()
 	start_generation()
+
+
+## Retorna o perfil de carro ativo (do AppState ou fallback)
+func get_active_car_profile() -> Dictionary:
+	var app_state: Node = get_node_or_null("/root/AppState")
+	if app_state and app_state.has_method("get_current_car_profile"):
+		return app_state.get_current_car_profile()
+	return CarProfileManager.get_default_profile()
+
+
+## Alterna o perfil do carro e reinicia a geração atual
+func change_car_profile(profile_id: String) -> void:
+	var app_state: Node = get_node_or_null("/root/AppState")
+	if app_state and app_state.has_method("set_current_car_profile"):
+		app_state.set_current_car_profile(profile_id)
+
+	var active_prof := get_active_car_profile()
+	var sensor_cnt: int = int(active_prof.get("sensor_count", 5))
+	var expected_inputs: int = sensor_cnt + 2
+	var expected_genes: int = NeuralNetwork.get_gene_count_for_inputs(expected_inputs)
+
+	if population:
+		population.gene_count = expected_genes
+		for g in population.genomes:
+			if g.genes.size() != expected_genes:
+				g.genes.resize(expected_genes)
+				g.randomize()
+
+	start_generation()
+
 
 func start_generation() -> void:
 	current_max_laps = 0
@@ -67,6 +104,8 @@ func start_generation() -> void:
 		track_cfg = track_mgr.get_track_config()
 		spawn_points = track_mgr.get_spawn_points()
 		spawn_transform = track_mgr.get_spawn_transform()
+
+	var active_prof := get_active_car_profile()
 
 	var car_index: int = 0
 	for genome in population.genomes:
@@ -99,15 +138,10 @@ func start_generation() -> void:
 			car.global_position = pos
 			car.global_rotation = spawn_transform.basis.get_euler()
 
-		# Aplica configurações específicas do carro
-		if track_cfg.has("max_speed"):
-			car.max_speed = float(track_cfg["max_speed"])
-		if track_cfg.has("acceleration"):
-			car.acceleration = float(track_cfg["acceleration"])
-		if track_cfg.has("brake_force"):
-			car.brake_force = float(track_cfg["brake_force"])
-		if track_cfg.has("steering_speed"):
-			car.steering_speed = float(track_cfg["steering_speed"])
+		# Aplica perfil de carro (física e sensores)
+		car.apply_profile(active_prof)
+
+		# Aplica configurações específicas da pista (timeouts de inatividade)
 		if track_cfg.has("max_idle_time"):
 			car.max_idle_time = float(track_cfg["max_idle_time"])
 		if track_cfg.has("enable_idle_timeout"):

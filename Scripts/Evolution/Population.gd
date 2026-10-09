@@ -5,6 +5,7 @@ extends Node
 @export var mutation_rate: float = 0.05
 @export var mutation_power: float = 0.2
 @export var elite_count: int = 1
+var gene_count: int = Genome.DEFAULT_GENE_COUNT
 
 var genomes: Array[Genome] = []
 var generation: int = 0
@@ -13,7 +14,7 @@ func create_initial_population() -> void:
 	genomes.clear()
 	
 	for i in range(population_size):
-		var genome: Genome = Genome.new()
+		var genome: Genome = Genome.new(gene_count)
 		genome.randomize()
 		
 		genomes.append(genome)
@@ -62,6 +63,7 @@ func to_dict() -> Dictionary:
 	return {
 		"generation": generation,
 		"population_size": population_size,
+		"gene_count": gene_count,
 		"mutation_rate": mutation_rate,
 		"mutation_power": mutation_power,
 		"elite_count": elite_count,
@@ -72,6 +74,8 @@ func to_dict() -> Dictionary:
 func load_from_dict(data: Dictionary) -> void:
 	generation = int(data.get("generation", 0))
 	population_size = int(data.get("population_size", population_size))
+	if data.has("gene_count"):
+		gene_count = int(data["gene_count"])
 	mutation_rate = float(data.get("mutation_rate", mutation_rate))
 	mutation_power = float(data.get("mutation_power", mutation_power))
 	elite_count = int(data.get("elite_count", elite_count))
@@ -80,10 +84,10 @@ func load_from_dict(data: Dictionary) -> void:
 	var raw_genomes: Array = data.get("genomes", [])
 	for g_data in raw_genomes:
 		if g_data is Dictionary:
-			genomes.append(Genome.from_dict(g_data))
+			genomes.append(Genome.from_dict(g_data, gene_count))
 	
 	# Se a lista estiver menor que a população esperada, preenche o restante
 	while genomes.size() < population_size:
-		var new_g := Genome.new()
+		var new_g := Genome.new(gene_count)
 		new_g.randomize()
 		genomes.append(new_g)

@@ -44,10 +44,7 @@ var current_track_config: Dictionary = {
 	"mutation_rate": 0.05,
 	"mutation_power": 0.2,
 	"elite_count": 1,
-	"max_speed": 300.0,
-	"acceleration": 200.0,
-	"brake_force": 100.0,
-	"steering_speed": 2.5
+	"car_profile_id": "standard"
 }
 
 # Nós de interface criados dinamicamente
@@ -67,7 +64,7 @@ var _cfg_check_idle: CheckBox
 var _cfg_spin_mut_rate: SpinBox
 var _cfg_spin_mut_power: SpinBox
 var _cfg_spin_elite: SpinBox
-var _cfg_spin_speed: SpinBox
+var _cfg_opt_car_profile: OptionButton
 var _cfg_spin_accel: SpinBox
 var _cfg_spin_brake: SpinBox
 var _cfg_spin_steer: SpinBox
@@ -484,12 +481,8 @@ func load_track_from_dict(data: Dictionary) -> bool:
 
 	if data.has("config") and data["config"] is Dictionary:
 		current_track_config = data["config"].duplicate()
-		if not current_track_config.has("acceleration"):
-			current_track_config["acceleration"] = 200.0
-		if not current_track_config.has("brake_force"):
-			current_track_config["brake_force"] = 100.0
-		if not current_track_config.has("steering_speed"):
-			current_track_config["steering_speed"] = 2.5
+		if not current_track_config.has("car_profile_id"):
+			current_track_config["car_profile_id"] = "standard"
 	else:
 		current_track_config = {
 			"population_size": 4,
@@ -498,10 +491,7 @@ func load_track_from_dict(data: Dictionary) -> bool:
 			"mutation_rate": 0.05,
 			"mutation_power": 0.2,
 			"elite_count": 1,
-			"max_speed": 300.0,
-			"acceleration": 200.0,
-			"brake_force": 100.0,
-			"steering_speed": 2.5
+			"car_profile_id": "standard"
 		}
 
 	if _line_edit_name:
@@ -558,6 +548,8 @@ func test_in_simulation() -> void:
 		app_state.current_track_name = track_data["track_name"]
 		app_state.is_testing_editor_track = true
 		app_state.temporary_editor_track_data = track_data
+		if app_state.has_method("set_current_car_profile"):
+			app_state.set_current_car_profile(current_track_config.get("car_profile_id", "standard"))
 		if camera:
 			app_state.editor_camera_transform = camera.transform
 			app_state.has_saved_editor_camera = true
@@ -1123,61 +1115,26 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	_cfg_spin_elite.value = 1
 	grid.add_child(_cfg_spin_elite)
 
-	# 6. Velocidade Máxima
-	var lbl_speed := Label.new()
-	lbl_speed.text = "Velocidade Máxima:"
-	lbl_speed.add_theme_font_size_override("font_size", 12)
-	grid.add_child(lbl_speed)
+	# 6. Perfil de Carro Selecionado
+	var lbl_car_prof := Label.new()
+	lbl_car_prof.text = "Perfil de Carro (Simulação):"
+	lbl_car_prof.add_theme_font_size_override("font_size", 12)
+	grid.add_child(lbl_car_prof)
 
-	_cfg_spin_speed = SpinBox.new()
-	_cfg_spin_speed.min_value = 0.0
-	_cfg_spin_speed.max_value = 2000.0
-	_cfg_spin_speed.step = 0.1
-	_cfg_spin_speed.allow_greater = true
-	_cfg_spin_speed.value = 300.0
-	grid.add_child(_cfg_spin_speed)
+	var prof_hbox := HBoxContainer.new()
+	prof_hbox.add_theme_constant_override("separation", 6)
+	_cfg_opt_car_profile = OptionButton.new()
+	_cfg_opt_car_profile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	prof_hbox.add_child(_cfg_opt_car_profile)
 
-	# 7. Aceleração
-	var lbl_accel := Label.new()
-	lbl_accel.text = "Aceleração do Motor:"
-	lbl_accel.add_theme_font_size_override("font_size", 12)
-	grid.add_child(lbl_accel)
-
-	_cfg_spin_accel = SpinBox.new()
-	_cfg_spin_accel.min_value = 0.0
-	_cfg_spin_accel.max_value = 2000.0
-	_cfg_spin_accel.step = 0.1
-	_cfg_spin_accel.allow_greater = true
-	_cfg_spin_accel.value = 200.0
-	grid.add_child(_cfg_spin_accel)
-
-	# 8. Força dos Freios
-	var lbl_brake := Label.new()
-	lbl_brake.text = "Força dos Freios:"
-	lbl_brake.add_theme_font_size_override("font_size", 12)
-	grid.add_child(lbl_brake)
-
-	_cfg_spin_brake = SpinBox.new()
-	_cfg_spin_brake.min_value = 0.0
-	_cfg_spin_brake.max_value = 2000.0
-	_cfg_spin_brake.step = 0.1
-	_cfg_spin_brake.allow_greater = true
-	_cfg_spin_brake.value = 100.0
-	grid.add_child(_cfg_spin_brake)
-
-	# 9. Velocidade ao Virar (Esterçamento)
-	var lbl_steer := Label.new()
-	lbl_steer.text = "Velocidade de Esterçamento:"
-	lbl_steer.add_theme_font_size_override("font_size", 12)
-	grid.add_child(lbl_steer)
-
-	_cfg_spin_steer = SpinBox.new()
-	_cfg_spin_steer.min_value = 0.0
-	_cfg_spin_steer.max_value = 100.0
-	_cfg_spin_steer.step = 0.01
-	_cfg_spin_steer.allow_greater = true
-	_cfg_spin_steer.value = 2.50
-	grid.add_child(_cfg_spin_steer)
+	var btn_edit_profiles := Button.new()
+	btn_edit_profiles.text = "✏️ Gerenciar Perfis"
+	btn_edit_profiles.add_theme_font_size_override("font_size", 10)
+	btn_edit_profiles.pressed.connect(func():
+		CarProfileModal.open_modal(self, func(_id): _refresh_editor_car_profiles())
+	)
+	prof_hbox.add_child(btn_edit_profiles)
+	grid.add_child(prof_hbox)
 
 	vbox.add_child(HSeparator.new())
 
@@ -1210,6 +1167,24 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	actions_hbox.add_child(btn_close)
 
 
+func _refresh_editor_car_profiles() -> void:
+	if not _cfg_opt_car_profile:
+		return
+	_cfg_opt_car_profile.clear()
+	var profiles := CarProfileManager.list_profiles()
+	var active_id: String = current_track_config.get("car_profile_id", "standard")
+	var sel_idx := 0
+
+	for i in range(profiles.size()):
+		var p: Dictionary = profiles[i]
+		_cfg_opt_car_profile.add_item(p["name"], i)
+		_cfg_opt_car_profile.set_item_metadata(i, p["id"])
+		if p["id"] == active_id:
+			sel_idx = i
+
+	_cfg_opt_car_profile.select(sel_idx)
+
+
 func _open_settings_modal() -> void:
 	if not _settings_modal:
 		return
@@ -1228,10 +1203,8 @@ func _open_settings_modal() -> void:
 	_cfg_spin_mut_rate.value = current_track_config.get("mutation_rate", 0.05)
 	_cfg_spin_mut_power.value = current_track_config.get("mutation_power", 0.20)
 	_cfg_spin_elite.value = current_track_config.get("elite_count", 1)
-	_cfg_spin_speed.value = current_track_config.get("max_speed", 300.0)
-	_cfg_spin_accel.value = current_track_config.get("acceleration", 200.0)
-	_cfg_spin_brake.value = current_track_config.get("brake_force", 100.0)
-	_cfg_spin_steer.value = current_track_config.get("steering_speed", 2.5)
+
+	_refresh_editor_car_profiles()
 
 	_settings_modal.visible = true
 	_is_mouse_over_ui = true
@@ -1244,10 +1217,14 @@ func _apply_settings_from_modal() -> void:
 	current_track_config["mutation_rate"] = float(_cfg_spin_mut_rate.value)
 	current_track_config["mutation_power"] = float(_cfg_spin_mut_power.value)
 	current_track_config["elite_count"] = int(_cfg_spin_elite.value)
-	current_track_config["max_speed"] = float(_cfg_spin_speed.value)
-	current_track_config["acceleration"] = float(_cfg_spin_accel.value)
-	current_track_config["brake_force"] = float(_cfg_spin_brake.value)
-	current_track_config["steering_speed"] = float(_cfg_spin_steer.value)
+
+	if _cfg_opt_car_profile:
+		var sel_idx := _cfg_opt_car_profile.selected
+		var chosen_id: String = _cfg_opt_car_profile.get_item_metadata(sel_idx)
+		current_track_config["car_profile_id"] = chosen_id
+		var app_state: Node = get_node_or_null("/root/AppState")
+		if app_state and app_state.has_method("set_current_car_profile"):
+			app_state.set_current_car_profile(chosen_id)
 
 	_settings_modal.visible = false
 	_is_mouse_over_ui = false
@@ -1262,10 +1239,8 @@ func _reset_settings_to_defaults() -> void:
 	_cfg_spin_mut_rate.value = 0.05
 	_cfg_spin_mut_power.value = 0.20
 	_cfg_spin_elite.value = 1
-	_cfg_spin_speed.value = 300.0
-	_cfg_spin_accel.value = 200.0
-	_cfg_spin_brake.value = 100.0
-	_cfg_spin_steer.value = 2.5
+	current_track_config["car_profile_id"] = "standard"
+	_refresh_editor_car_profiles()
 
 
 func _list_available_tracks() -> Array:

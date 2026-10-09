@@ -13,19 +13,11 @@ static var global_debug: bool = true
 #@export var sensor_offset := Vector3(0.0, 0.3, -1.5)
 #@export var sensor_offset := Vector3(0.0, 0.05, -0.13)
 @export var sensor_offset := Vector3(0.0, 0.05, 0.15)
+@export var sensor_count: int = 5
+@export var sensor_range: float = 1.5
+@export var sensor_spread_angle: float = 90.0
 
-const SENSOR_COUNT: int = 5
-#const MAX_DISTANCE: float = 0.2
-const MAX_DISTANCE: float = 1
-
-var sensor_angles: Array = [
-	deg_to_rad(-45.0),
-	deg_to_rad(-22.5),
-	0.0,
-	deg_to_rad(22.5),
-	deg_to_rad(45.0)
-]
-
+var sensor_angles: Array = []
 var distances: PackedFloat32Array
 
 # Estrutura para armazenar os raios do frame atual
@@ -37,8 +29,34 @@ var _immediate_mesh: ImmediateMesh
 var _debug_material: StandardMaterial3D
 
 func _ready() -> void:
-	distances.resize(SENSOR_COUNT)
+	recalculate_sensor_angles()
 	_setup_debug_mesh()
+
+
+## Configura os sensores de acordo com as propriedades do perfil do carro
+func configure_sensors(p_count: int, p_range: float, p_spread: float, p_offset: Vector3 = Vector3.ZERO) -> void:
+	sensor_count = max(1, p_count)
+	sensor_range = max(0.1, p_range)
+	sensor_spread_angle = clamp(p_spread, 10.0, 180.0)
+	if p_offset != Vector3.ZERO:
+		sensor_offset = p_offset
+	recalculate_sensor_angles()
+
+
+## Recalcula o leque angular dos sensores
+func recalculate_sensor_angles() -> void:
+	sensor_angles.clear()
+	distances.resize(sensor_count)
+
+	if sensor_count == 1:
+		sensor_angles.append(0.0)
+		return
+
+	var half_spread := deg_to_rad(sensor_spread_angle * 0.5)
+	var step := (half_spread * 2.0) / float(sensor_count - 1)
+	for i in range(sensor_count):
+		sensor_angles.append(-half_spread + (step * float(i)))
+
 
 func _setup_debug_mesh() -> void:
 	_immediate_mesh = ImmediateMesh.new()
@@ -71,7 +89,10 @@ func update_sensors() -> PackedFloat32Array:
 	if is_debug_active():
 		_debug_rays.clear()
 	
-	for i in range(SENSOR_COUNT):
+	if distances.size() != sensor_count or sensor_angles.size() != sensor_count:
+		recalculate_sensor_angles()
+
+	for i in range(sensor_count):
 		distances[i] = cast_sensor(sensor_angles[i])
 	
 	if is_debug_active():
@@ -90,7 +111,7 @@ func cast_sensor(angle: float) -> float:
 	var direction: Vector3 = -(global_transform.basis * local_direction).normalized()
 	
 	var start: Vector3 = global_transform * sensor_offset
-	var end: Vector3 = start + direction * MAX_DISTANCE
+	var end: Vector3 = start + direction * sensor_range
 	
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(start, end)
 	query.exclude = [get_parent()]
@@ -113,7 +134,7 @@ func cast_sensor(angle: float) -> float:
 	if not hit:
 		return 1.0
 	
-	return clamp(distance / MAX_DISTANCE, 0.0, 1.0)
+	return clamp(distance / sensor_range, 0.0, 1.0)
 
 func _draw_debug_rays() -> void:
 	_immediate_mesh.clear_surfaces()

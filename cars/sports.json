@@ -1,0 +1,17 @@
+{
+	"id": "sports",
+	"name": "Esportivo",
+	"physics": {
+		"max_speed": 420.0,
+		"acceleration": 320.0,
+		"brake_force": 180.0,
+		"steering_speed": 3.2
+	},
+	"sensors": {
+		"sensor_count": 7,
+		"sensor_range": 2.5,
+		"sensor_spread_angle": 110.0,
+		"sensor_offset_y": 0.05,
+		"sensor_offset_z": 0.15
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"id": "drift",
+	"name": "Drifter",
+	"physics": {
+		"max_speed": 260.0,
+		"acceleration": 250.0,
+		"brake_force": 140.0,
+		"steering_speed": 4.5
+	},
+	"sensors": {
+		"sensor_count": 5,
+		"sensor_range": 1.8,
+		"sensor_spread_angle": 130.0,
+		"sensor_offset_y": 0.05,
+		"sensor_offset_z": 0.15
+	}
+}

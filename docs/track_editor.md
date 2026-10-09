@@ -46,20 +46,29 @@ O [TrackManager](file:///Users/samukadev/Documents/Godot%20Projects/race-ai/Scri
  
 ---
  
-## ⚙️ Configurações da Pista & Simulação (Tipagem Float & Valores Livres)
+## ⚙️ Configurações da Pista & Simulação (Desacoplamento de Carros)
  
-O botão **"⚙️ Configs"** na barra superior do editor abre um modal interativo para personalizar a física e o treinamento da inteligência artificial. Todos os campos possuem tipagem `float` nativa, com `allow_greater = true` para permitir valores personalizados sem travas artificiais:
+O botão **"⚙️ Configs"** na barra superior do editor abre um modal interativo focado exclusivamente nos parâmetros de treinamento e do circuito, desacoplado da dinâmica veicular dos veículos:
  
+* **Perfil do Carro Associado**: Seletor do perfil veicular ativo (`OptionButton`) que define o modelo dinâmico (motor, sensores, freios) utilizado pelos competidores nesta pista, com botão de atalho **"✏️ Gerenciar Perfis"**.
 * **Vagas Detectadas**: Exibe em tempo real quantas vagas físicas de largada existem no circuito (ex: $2 \times \text{RoadStartPositions} = 8\text{ vagas}$).
 * **Quantidade de Carros (`population_size`)**: Quantidade de carros criados (inteiro, sem teto fixo, com botão *"Auto Vagas"*).
 * **Timeout de Inatividade (`max_idle_time` e `enable_idle_timeout`)**: Tempo limite decimal (`step = 0.1s`) para eliminar carros parados.
 * **Taxa de Mutação (`mutation_rate`)**: Percentual decimal com 3 casas (`step = 0.001`, ex: `0.050` = 5%).
 * **Força da Mutação (`mutation_power`)**: Intensidade decimal (`step = 0.01`, ex: `0.20`).
 * **Elitismo (`elite_count`)**: Quantidade de melhores pilotos clonados integralmente para a próxima geração.
-* **Velocidade Máxima dos Veículos (`max_speed`)**: Limite decimal de velocidade física dos carros (`step = 0.1`, sem teto fixo).
-* **Aceleração do Motor (`acceleration`)**: Taxa de aumento de velocidade por segundo (`step = 0.1`, ex: `200.0`).
-* **Força dos Freios (`brake_force`)**: Intensidade de desaceleração dos veículos (`step = 0.1`, ex: `100.0`).
-* **Velocidade de Esterçamento (`steering_speed`)**: Agilidade de rotação e curva do volante (`step = 0.01`, destravada além de $10.0$ permitindo qualquer valor como $15.0$, $25.5$, etc.).
+
+---
+
+## 🏎️ Perfis de Carros (`CarProfileManager.gd`)
+
+Os parâmetros veiculares e de sensoriamento são gerenciados de forma independente através de **Perfis de Carro** (`cars/*.json`):
+
+* **Física e Motor**: Velocidade máxima (`max_speed`), aceleração (`acceleration`), freio (`brake_force`) e agilidade do esterçamento (`steering_speed`).
+* **Sensores Ultrassônicos/Raycasts**: Quantidade de raios (`sensor_count`), alcance máximo de medição (`sensor_range`), ângulo de abertura/leque (`sensor_spread_angle`) e offsets tridimensionais.
+* **Rede Neural Autoajustável**: A rede neural ajusta dinamicamente sua camada de entrada para corresponder a `sensor_count + 2` (sensores + velocidade linear + rotação angular), recalculando os genes automaticamente sem exigir reinicialização manual.
+* **Reutilização Multicircuito**: Um mesmo perfil de carro (ex: `standard`, `sports`, `drift`, `compact_kart`) pode ser treinado e competido em circuitos diferentes, permitindo avaliar a adaptabilidade da IA em diferentes traçados.
+
  
 ---
  

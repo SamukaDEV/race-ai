@@ -102,7 +102,7 @@ text = "🛠️  Editor de Pistas"
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "⚙️  Configurações"
+text = "🏎️  Garagem / Perfis de Carros"
 
 [node name="BtnQuit" type="Button" parent="CenterContainer/MainPanel/VBoxContainer" unique_id=45652063]
 custom_minimum_size = Vector2(0, 38)

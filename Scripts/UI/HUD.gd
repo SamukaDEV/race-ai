@@ -10,12 +10,15 @@ var _simulation: Simulation
 var _save_manager: SaveManagerClass
 
 # Nós de interface de telemetria
+var _header_label: Label
+var _opt_car_profile: OptionButton
 var _lbl_generation: Label
 var _lbl_leader_laps: Label
 var _lbl_record_laps: Label
 var _lbl_cars_alive: Label
 var _lbl_best_fitness: Label
 var _cars_container: VBoxContainer
+var _champions_modal: Control
 
 # Nós do sistema de Toast (Notificação flutuante)
 var _toast_panel: PanelContainer
@@ -86,11 +89,13 @@ func _build_ui() -> void:
 	# --- CABEÇALHO ---
 	var app_state: Node = get_node_or_null("/root/AppState")
 	var track_display_name: String = app_state.current_track_name if app_state else "Circuito Padrão"
-	var header := Label.new()
-	header.text = "🏁 %s" % track_display_name.to_upper()
-	header.add_theme_font_size_override("font_size", 14)
-	header.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
-	root_vbox.add_child(header)
+	var car_prof_name: String = app_state.current_car_profile_name if app_state else "Padrão"
+	
+	_header_label = Label.new()
+	_header_label.text = "🏁 %s\n🏎️ PERFIL: %s" % [track_display_name.to_upper(), car_prof_name.to_upper()]
+	_header_label.add_theme_font_size_override("font_size", 13)
+	_header_label.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
+	root_vbox.add_child(_header_label)
 
 	_lbl_pause_banner = Label.new()
 	_lbl_pause_banner.text = "⏸️ SIMULAÇÃO PAUSADA"
@@ -102,6 +107,24 @@ func _build_ui() -> void:
 
 	var separator1 := HSeparator.new()
 	root_vbox.add_child(separator1)
+
+	# --- SELETOR DE PERFIL DE CARRO EM TEMPO REAL ---
+	var car_select_box := HBoxContainer.new()
+	car_select_box.add_theme_constant_override("separation", 6)
+	root_vbox.add_child(car_select_box)
+
+	var lbl_car_prof := Label.new()
+	lbl_car_prof.text = "🏎️ Carro:"
+	lbl_car_prof.add_theme_font_size_override("font_size", 11)
+	lbl_car_prof.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9))
+	car_select_box.add_child(lbl_car_prof)
+
+	_opt_car_profile = OptionButton.new()
+	_opt_car_profile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_opt_car_profile.add_theme_font_size_override("font_size", 11)
+	_populate_car_profiles_dropdown()
+	_opt_car_profile.item_selected.connect(_on_car_profile_selected)
+	car_select_box.add_child(_opt_car_profile)
 
 	# --- DESTAQUE DE VOLTAS (LAPS) ---
 	var laps_box := HBoxContainer.new()
@@ -186,18 +209,29 @@ func _build_ui() -> void:
 	root_vbox.add_child(actions_row2)
 
 	var btn_export_best := Button.new()
-	btn_export_best.text = "⭐ Campeão"
-	btn_export_best.tooltip_text = "Salva o genoma do piloto com maior pontuação em arquivo individual"
+	btn_export_best.text = "⭐ Salvar Campeão"
+	btn_export_best.tooltip_text = "Salva o genoma do piloto com maior pontuação em arquivo versionado único"
 	btn_export_best.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_export_best.pressed.connect(_on_export_best_pressed)
 	actions_row2.add_child(btn_export_best)
+
+	var btn_view_champs := Button.new()
+	btn_view_champs.text = "📜 Campeões"
+	btn_view_champs.tooltip_text = "Visualiza o histórico de pilotos campeões salvos nesta pista"
+	btn_view_champs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_view_champs.pressed.connect(_open_champions_modal)
+	actions_row2.add_child(btn_view_champs)
+
+	var actions_row3 := HBoxContainer.new()
+	actions_row3.add_theme_constant_override("separation", 6)
+	root_vbox.add_child(actions_row3)
 
 	var btn_menu := Button.new()
 	btn_menu.text = "🏠 Menu"
 	btn_menu.tooltip_text = "Retorna ao Menu Principal"
 	btn_menu.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_menu.pressed.connect(func(): get_tree().change_scene_to_file("res://Levels/MainMenu.tscn"))
-	actions_row2.add_child(btn_menu)
+	actions_row3.add_child(btn_menu)
 
 	var btn_editor := Button.new()
 	btn_editor.text = "🛠️ Editor"
@@ -205,7 +239,7 @@ func _build_ui() -> void:
 	btn_editor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_editor.add_theme_color_override("font_color", Color(0.2, 1.0, 0.6))
 	btn_editor.pressed.connect(func(): get_tree().change_scene_to_file("res://Levels/TrackEditor.tscn"))
-	actions_row2.add_child(btn_editor)
+	actions_row3.add_child(btn_editor)
 
 	var separator4 := HSeparator.new()
 	root_vbox.add_child(separator4)
@@ -370,13 +404,15 @@ func _process(_delta: float) -> void:
 
 
 func _update_cars_list(cars_list: Array[RaceCar]) -> void:
-	# Ordena por voltas e distância percorrida decrescente
+	# Ordena por maior pontuação (fitness) obtida
 	cars_list.sort_custom(func(a: RaceCar, b: RaceCar):
 		if not is_instance_valid(a) or not is_instance_valid(b):
 			return false
-		if a.laps != b.laps:
-			return a.laps > b.laps
-		return a.distance_traveled > b.distance_traveled
+		var fit_a := a.get_fitness()
+		var fit_b := b.get_fitness()
+		if not is_equal_approx(fit_a, fit_b):
+			return fit_a > fit_b
+		return a.laps > b.laps
 	)
 
 	# Reutiliza ou ajusta filhos no _cars_container
@@ -395,9 +431,164 @@ func _update_cars_list(cars_list: Array[RaceCar]) -> void:
 			continue
 
 		if car.alive:
-			label.text = "• %s | L: %d | %.0fm" % [car.name, car.laps, car.distance_traveled]
+			label.text = "• %s | L: %d | Fit: %.1fm" % [car.name, car.laps, car.get_fitness()]
 			label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.6))
 		else:
 			var tag := car.death_reason if car.death_reason != "" else "Dead"
-			label.text = "✕ %s | L: %d | %s" % [car.name, car.laps, tag]
-			label.add_theme_color_override("font_color", Color(0.55, 0.55, 0.6))
+			label.text = "✕ %s | L: %d | Fit: %.1fm [%s]" % [car.name, car.laps, car.get_fitness(), tag]
+			label.add_theme_color_override("font_color", Color(0.65, 0.65, 0.72))
+
+
+func _populate_car_profiles_dropdown() -> void:
+	if not _opt_car_profile:
+		return
+	_opt_car_profile.clear()
+
+	var app_state: Node = get_node_or_null("/root/AppState")
+	var active_id: String = app_state.current_car_profile_id if app_state else "standard"
+	var profiles := CarProfileManager.list_profiles()
+
+	var selected_idx := 0
+	for i in range(profiles.size()):
+		var prof: Dictionary = profiles[i]
+		var p_id: String = prof["id"]
+		var p_name: String = prof["name"]
+		_opt_car_profile.add_item(p_name, i)
+		_opt_car_profile.set_item_metadata(i, p_id)
+		if p_id == active_id:
+			selected_idx = i
+
+	_opt_car_profile.select(selected_idx)
+
+
+func _on_car_profile_selected(index: int) -> void:
+	var prof_id: String = _opt_car_profile.get_item_metadata(index)
+	var app_state: Node = get_node_or_null("/root/AppState")
+	if app_state and app_state.current_car_profile_id == prof_id:
+		return
+
+	if _simulation and is_instance_valid(_simulation):
+		_simulation.change_car_profile(prof_id)
+
+	_update_header_text()
+	var prof_data := CarProfileManager.get_profile(prof_id)
+	show_toast("🏎️ Carro alterado para [%s]! Reiniciando geração..." % prof_data.get("name", prof_id))
+
+
+func _update_header_text() -> void:
+	if not _header_label:
+		return
+	var app_state: Node = get_node_or_null("/root/AppState")
+	var track_display_name: String = app_state.current_track_name if app_state else "Circuito Padrão"
+	var car_prof_name: String = app_state.current_car_profile_name if app_state else "Padrão"
+	_header_label.text = "🏁 %s\n🏎️ PERFIL: %s" % [track_display_name.to_upper(), car_prof_name.to_upper()]
+
+
+## Abre modal interativo listando o histórico de pilotos campeões salvos
+func _open_champions_modal() -> void:
+	if _champions_modal and is_instance_valid(_champions_modal):
+		_champions_modal.queue_free()
+
+	_champions_modal = Control.new()
+	_champions_modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_champions_modal)
+
+	var dimmer := ColorRect.new()
+	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dimmer.color = Color(0.02, 0.03, 0.06, 0.75)
+	_champions_modal.add_child(dimmer)
+
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_champions_modal.add_child(center)
+
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(480, 360)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.1, 0.15, 0.98)
+	style.set_corner_radius_all(10)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(0.0, 0.8, 1.0, 0.8)
+	style.content_margin_left = 20
+	style.content_margin_top = 16
+	style.content_margin_right = 20
+	style.content_margin_bottom = 16
+	panel.add_theme_stylebox_override("panel", style)
+	center.add_child(panel)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	panel.add_child(vbox)
+
+	var header_hbox := HBoxContainer.new()
+	vbox.add_child(header_hbox)
+
+	var title := Label.new()
+	title.text = "📜 HISTÓRICO DE CAMPEÕES EXPORTADOS"
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_child(title)
+
+	var btn_close := Button.new()
+	btn_close.text = "✕"
+	btn_close.flat = true
+	btn_close.pressed.connect(func(): _champions_modal.queue_free())
+	header_hbox.add_child(btn_close)
+
+	vbox.add_child(HSeparator.new())
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(0, 240)
+	vbox.add_child(scroll)
+
+	var list_vbox := VBoxContainer.new()
+	list_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list_vbox.add_theme_constant_override("separation", 6)
+	scroll.add_child(list_vbox)
+
+	var champions := _save_manager.list_exported_champions() if _save_manager else []
+	if champions.is_empty():
+		var empty_lbl := Label.new()
+		empty_lbl.text = "Nenhum campeão salvo ainda nesta pista.\nClique em '⭐ Salvar Campeão' para exportar."
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		list_vbox.add_child(empty_lbl)
+	else:
+		for champ in champions:
+			var item_panel := PanelContainer.new()
+			var item_style := StyleBoxFlat.new()
+			item_style.bg_color = Color(0.12, 0.15, 0.22, 0.8)
+			item_style.set_corner_radius_all(6)
+			item_style.content_margin_left = 10
+			item_style.content_margin_top = 8
+			item_style.content_margin_right = 10
+			item_style.content_margin_bottom = 8
+			item_panel.add_theme_stylebox_override("panel", item_style)
+			list_vbox.add_child(item_panel)
+
+			var item_hbox := HBoxContainer.new()
+			item_panel.add_child(item_hbox)
+
+			var info_lbl := Label.new()
+			var gen_txt: int = champ.get("generation", 0)
+			var fit_txt: float = champ.get("fitness", 0.0)
+			var car_id: String = champ.get("car_profile_id", "standard")
+			info_lbl.text = "🏆 Gen #%d • Fit: %.1fm • Carro: %s\n📅 %s" % [gen_txt, fit_txt, car_id, champ.get("timestamp", "")]
+			info_lbl.add_theme_font_size_override("font_size", 11)
+			info_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			item_hbox.add_child(info_lbl)
+
+			var btn_import := Button.new()
+			btn_import.text = "Usar como Semente"
+			btn_import.add_theme_font_size_override("font_size", 11)
+			var c_path: String = champ.get("path", "")
+			btn_import.pressed.connect(func():
+				if _save_manager:
+					_save_manager.import_best_pilot(c_path)
+					_champions_modal.queue_free()
+			)
+			item_hbox.add_child(btn_import)

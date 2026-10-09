@@ -1,0 +1,17 @@
+{
+	"id": "compact_kart",
+	"name": "Compact Kart",
+	"physics": {
+		"max_speed": 220.0,
+		"acceleration": 210.0,
+		"brake_force": 120.0,
+		"steering_speed": 3.0
+	},
+	"sensors": {
+		"sensor_count": 3,
+		"sensor_range": 1.0,
+		"sensor_spread_angle": 70.0,
+		"sensor_offset_y": 0.05,
+		"sensor_offset_z": 0.15
+	}
+}

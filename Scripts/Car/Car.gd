@@ -26,11 +26,45 @@ var idle_timer: float = 0.0
 var laps: int = 0
 var current_checkpoint_index: int = 0
 var death_reason: String = ""
+var final_fitness: float = 0.0
+var car_profile_id: String = "standard"
+
+
+## Aplica as configurações do perfil de carro à física e aos sensores
+func apply_profile(profile_data: Dictionary) -> void:
+	if profile_data.is_empty():
+		return
+
+	car_profile_id = profile_data.get("id", "standard")
+
+	if profile_data.has("max_speed"):
+		max_speed = float(profile_data["max_speed"])
+	if profile_data.has("acceleration"):
+		acceleration = float(profile_data["acceleration"])
+	if profile_data.has("brake_force"):
+		brake_force = float(profile_data["brake_force"])
+	if profile_data.has("steering_speed"):
+		steering_speed = float(profile_data["steering_speed"])
+
+	# Configura sensores
+	if sensors:
+		var s_cnt: int = int(profile_data.get("sensor_count", 5))
+		var s_rng: float = float(profile_data.get("sensor_range", 1.5))
+		var s_spd: float = float(profile_data.get("sensor_spread_angle", 90.0))
+		var s_off := Vector3(
+			0.0,
+			float(profile_data.get("sensor_offset_y", 0.05)),
+			float(profile_data.get("sensor_offset_z", 0.15))
+		)
+		sensors.configure_sensors(s_cnt, s_rng, s_spd, s_off)
+
 
 func setup(p_genome: Genome) -> void:
 	genome = p_genome
 	
-	neural_network = NeuralNetwork.new()
+	var sensor_cnt: int = sensors.sensor_count if sensors else 5
+	var total_inputs: int = sensor_cnt + 2
+	neural_network = NeuralNetwork.new(total_inputs)
 	neural_network.from_genome(genome)
 
 func _physics_process(delta: float) -> void:
@@ -39,15 +73,12 @@ func _physics_process(delta: float) -> void:
 	
 	var sensor_values: PackedFloat32Array = sensors.update_sensors()
 	
-	var inputs: PackedFloat32Array = PackedFloat32Array([
-		sensor_values[0],
-		sensor_values[1],
-		sensor_values[2],
-		sensor_values[3],
-		sensor_values[4],
-		speed_value / max_speed,
-		get_direction_input()
-	])
+	var inputs: PackedFloat32Array = PackedFloat32Array()
+	inputs.resize(sensor_values.size() + 2)
+	for i in range(sensor_values.size()):
+		inputs[i] = sensor_values[i]
+	inputs[sensor_values.size()] = speed_value / max_speed
+	inputs[sensor_values.size() + 1] = get_direction_input()
 	
 	var outputs := neural_network.forward(inputs)
 	
@@ -115,6 +146,9 @@ func get_direction_input() -> float:
 	return sin(rotation.y)
 
 func die(reason: String = "Dead") -> void:
+	if not alive:
+		return
+	final_fitness = distance_traveled + (laps * 500.0)
 	alive = false
 	death_reason = reason
 	velocity = Vector3.ZERO
@@ -124,6 +158,8 @@ func die(reason: String = "Dead") -> void:
 		sensors.clear_debug() # Limpa as linhas ao morrer
 
 func get_fitness() -> float:
+	if not alive and final_fitness > 0.0:
+		return final_fitness
 	return distance_traveled + (laps * 500.0)
 
 ## Registra a passagem por um checkpoint na ordem correta
