@@ -10,6 +10,13 @@ size = Vector3(0.5291748, 0.3486328, 2.7120361)
 [sub_resource type="PrismMesh" id="PrismMesh_88a7p"]
 material = ExtResource("2_2q523")
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_2q523"]
+radius = 0.15576172
+height = 0.9916992
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_p40oq"]
+size = Vector3(0.14208984, 1, 0.36641693)
+
 [node name="roadCornerBridgeSmall" unique_id=938365019 instance=ExtResource("1_nk15o")]
 
 [node name="roadCornerBridgeSmall(Clone)" parent="." index="0" unique_id=1166986624]
@@ -22,3 +29,25 @@ mesh = SubResource("BoxMesh_p40oq")
 [node name="ARROW" type="MeshInstance3D" parent="ROAD_DIRECTION_INDICATOR" index="0" unique_id=370970799]
 transform = Transform3D(1.9106853e-15, -4.371138e-08, 0.99999976, -0.9999998, -4.371138e-08, 0, 4.371138e-08, -0.9999998, -4.3711374e-08, 0, 0, -1.2136316)
 mesh = SubResource("PrismMesh_88a7p")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." index="2" unique_id=1553287171 groups=["track_obstacle"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0" unique_id=1642667625]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.0031738281, 0)
+shape = SubResource("CapsuleShape3D_2q523")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" index="1" unique_id=1780463454]
+transform = Transform3D(0.9894147, 0, -0.14511576, 0, 1, 0, 0.14511576, 0, 0.9894147, 0.109698676, 0, -0.1735052)
+shape = SubResource("BoxShape3D_p40oq")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="StaticBody3D" index="2" unique_id=1382510573]
+transform = Transform3D(0.87461084, 0, -0.4848256, 0, 1, 0, 0.4848256, 0, 0.87461084, 0.2310902, 0, -0.48600492)
+shape = SubResource("BoxShape3D_p40oq")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="StaticBody3D" index="3" unique_id=388642979]
+transform = Transform3D(0.65106696, 0, -0.7590203, 0, 1, 0, 0.7590203, 0, 0.65106696, 0.47203994, 0, -0.7567044)
+shape = SubResource("BoxShape3D_p40oq")
+
+[node name="CollisionShape3D5" type="CollisionShape3D" parent="StaticBody3D" index="4" unique_id=1569860111]
+transform = Transform3D(0.1055496, 0, -0.99441415, 0, 1, 0, 0.99441415, 0, 0.1055496, 0.82349575, 0, -0.89970744)
+shape = SubResource("BoxShape3D_p40oq")
