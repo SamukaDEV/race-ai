@@ -6,15 +6,31 @@ extends Control
 ## o Editor de Pistas 3D e Configurações futuras.
 
 @onready var main_container: VBoxContainer = $CenterContainer/MainPanel/VBoxContainer
-@onready var track_select_modal: PanelContainer = $TrackSelectModal
-@onready var track_list_vbox: VBoxContainer = $TrackSelectModal/VBoxContainer/ScrollContainer/TrackListVBox
-@onready var settings_modal: PanelContainer = $SettingsModal
+@onready var track_select_modal: Control = $TrackSelectModal
+@onready var track_list_vbox: VBoxContainer = $TrackSelectModal/CenterContainer/Panel/VBoxContainer/ScrollContainer/TrackListVBox
+@onready var settings_modal: Control = $SettingsModal
 
 
 func _ready() -> void:
 	track_select_modal.visible = false
 	settings_modal.visible = false
 	_populate_track_list()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		if track_select_modal.visible:
+			track_select_modal.visible = false
+			get_viewport().set_input_as_handled()
+		elif settings_modal.visible:
+			settings_modal.visible = false
+			get_viewport().set_input_as_handled()
+
+
+func _on_dimmer_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		track_select_modal.visible = false
+		settings_modal.visible = false
 
 
 func _on_btn_simulation_pressed() -> void:

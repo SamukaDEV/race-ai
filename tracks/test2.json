@@ -54,18 +54,18 @@
 		}
 	],
 	"config": {
-		"acceleration": 10.0,
-		"brake_force": 20.0,
+		"acceleration": 5.0,
+		"brake_force": 6.9,
 		"elite_count": 3,
 		"enable_idle_timeout": true,
 		"max_idle_time": 3.0,
-		"max_speed": 100.0,
+		"max_speed": 50.0,
 		"mutation_power": 0.2,
 		"mutation_rate": 0.05,
 		"population_size": 8,
-		"steering_speed": 10.0
+		"steering_speed": 90.0
 	},
-	"created_at": "2026-10-09T09:55:51",
+	"created_at": "2026-10-09T10:47:57",
 	"grid_size": 1.0,
 	"pieces": [
 		{

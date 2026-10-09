@@ -120,84 +120,149 @@ theme_override_font_sizes/font_size = 10
 text = "Godot Engine 4.7 • Jolt Physics 3D"
 horizontal_alignment = 1
 
-[node name="TrackSelectModal" type="PanelContainer" parent="." unique_id=775686381]
+[node name="TrackSelectModal" type="Control" parent="." unique_id=775686381]
 visible = false
-custom_minimum_size = Vector2(400, 320)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -160.0
-offset_right = 200.0
-offset_bottom = 160.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="TrackSelectModal" unique_id=987123451]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.06, 0.75)
+
+[node name="CenterContainer" type="CenterContainer" parent="TrackSelectModal" unique_id=987123452]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="TrackSelectModal/CenterContainer" unique_id=987123453]
+custom_minimum_size = Vector2(440, 360)
+layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="TrackSelectModal" unique_id=381546380]
+[node name="VBoxContainer" type="VBoxContainer" parent="TrackSelectModal/CenterContainer/Panel" unique_id=381546380]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="ModalTitle" type="Label" parent="TrackSelectModal/VBoxContainer" unique_id=1801301761]
+[node name="HeaderHBox" type="HBoxContainer" parent="TrackSelectModal/CenterContainer/Panel/VBoxContainer" unique_id=987123454]
 layout_mode = 2
+
+[node name="ModalTitle" type="Label" parent="TrackSelectModal/CenterContainer/Panel/VBoxContainer/HeaderHBox" unique_id=1801301761]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "🏁 SELECIONE O CIRCUITO"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="TrackSelectModal/VBoxContainer" unique_id=1562480990]
-custom_minimum_size = Vector2(0, 200)
+[node name="BtnCloseX" type="Button" parent="TrackSelectModal/CenterContainer/Panel/VBoxContainer/HeaderHBox" unique_id=987123455]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "✕"
+flat = true
+
+[node name="HSeparator" type="HSeparator" parent="TrackSelectModal/CenterContainer/Panel/VBoxContainer" unique_id=987123456]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TrackSelectModal/CenterContainer/Panel/VBoxContainer" unique_id=1562480990]
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
-[node name="TrackListVBox" type="VBoxContainer" parent="TrackSelectModal/VBoxContainer/ScrollContainer" unique_id=574805234]
+[node name="TrackListVBox" type="VBoxContainer" parent="TrackSelectModal/CenterContainer/Panel/VBoxContainer/ScrollContainer" unique_id=574805234]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="BtnCloseTrackModal" type="Button" parent="TrackSelectModal/VBoxContainer" unique_id=1841192604]
+[node name="HSeparator2" type="HSeparator" parent="TrackSelectModal/CenterContainer/Panel/VBoxContainer" unique_id=987123457]
+layout_mode = 2
+
+[node name="BtnCloseTrackModal" type="Button" parent="TrackSelectModal/CenterContainer/Panel/VBoxContainer" unique_id=1841192604]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Voltar"
 
-[node name="SettingsModal" type="PanelContainer" parent="." unique_id=2846608]
+[node name="SettingsModal" type="Control" parent="." unique_id=2846608]
 visible = false
-custom_minimum_size = Vector2(400, 260)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -130.0
-offset_right = 200.0
-offset_bottom = 130.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="SettingsModal" unique_id=987123461]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.06, 0.75)
+
+[node name="CenterContainer" type="CenterContainer" parent="SettingsModal" unique_id=987123462]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="SettingsModal/CenterContainer" unique_id=987123463]
+custom_minimum_size = Vector2(440, 240)
+layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="SettingsModal" unique_id=1792797686]
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsModal/CenterContainer/Panel" unique_id=1792797686]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="SettingsTitle" type="Label" parent="SettingsModal/VBoxContainer" unique_id=1658410401]
+[node name="HeaderHBox" type="HBoxContainer" parent="SettingsModal/CenterContainer/Panel/VBoxContainer" unique_id=987123464]
 layout_mode = 2
+
+[node name="SettingsTitle" type="Label" parent="SettingsModal/CenterContainer/Panel/VBoxContainer/HeaderHBox" unique_id=1658410401]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0, 0.9, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "⚙️ CONFIGURAÇÕES DA SIMULAÇÃO"
 horizontal_alignment = 1
 
-[node name="Info" type="Label" parent="SettingsModal/VBoxContainer" unique_id=979606367]
+[node name="BtnCloseX" type="Button" parent="SettingsModal/CenterContainer/Panel/VBoxContainer/HeaderHBox" unique_id=987123465]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "✕"
+flat = true
+
+[node name="HSeparator" type="HSeparator" parent="SettingsModal/CenterContainer/Panel/VBoxContainer" unique_id=987123466]
+layout_mode = 2
+
+[node name="Info" type="Label" parent="SettingsModal/CenterContainer/Panel/VBoxContainer" unique_id=979606367]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 12
 text = "Módulo de Edição de Sensores e Redes Neurais pronto para expansões futuras (Camadas, População, etc.)."
 autowrap_mode = 2
 
-[node name="BtnCloseSettings" type="Button" parent="SettingsModal/VBoxContainer" unique_id=194317756]
+[node name="HSeparator2" type="HSeparator" parent="SettingsModal/CenterContainer/Panel/VBoxContainer" unique_id=987123467]
+layout_mode = 2
+
+[node name="BtnCloseSettings" type="Button" parent="SettingsModal/CenterContainer/Panel/VBoxContainer" unique_id=194317756]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_vertical = 10
 text = "Fechar"
@@ -206,5 +271,9 @@ text = "Fechar"
 [connection signal="pressed" from="CenterContainer/MainPanel/VBoxContainer/BtnEditor" to="." method="_on_btn_editor_pressed"]
 [connection signal="pressed" from="CenterContainer/MainPanel/VBoxContainer/BtnSettings" to="." method="_on_btn_settings_pressed"]
 [connection signal="pressed" from="CenterContainer/MainPanel/VBoxContainer/BtnQuit" to="." method="_on_btn_quit_pressed"]
-[connection signal="pressed" from="TrackSelectModal/VBoxContainer/BtnCloseTrackModal" to="." method="_on_close_track_modal_pressed"]
-[connection signal="pressed" from="SettingsModal/VBoxContainer/BtnCloseSettings" to="." method="_on_close_settings_modal_pressed"]
+[connection signal="gui_input" from="TrackSelectModal/Dimmer" to="." method="_on_dimmer_gui_input"]
+[connection signal="pressed" from="TrackSelectModal/CenterContainer/Panel/VBoxContainer/HeaderHBox/BtnCloseX" to="." method="_on_close_track_modal_pressed"]
+[connection signal="pressed" from="TrackSelectModal/CenterContainer/Panel/VBoxContainer/BtnCloseTrackModal" to="." method="_on_close_track_modal_pressed"]
+[connection signal="gui_input" from="SettingsModal/Dimmer" to="." method="_on_dimmer_gui_input"]
+[connection signal="pressed" from="SettingsModal/CenterContainer/Panel/VBoxContainer/HeaderHBox/BtnCloseX" to="." method="_on_close_settings_modal_pressed"]
+[connection signal="pressed" from="SettingsModal/CenterContainer/Panel/VBoxContainer/BtnCloseSettings" to="." method="_on_close_settings_modal_pressed"]

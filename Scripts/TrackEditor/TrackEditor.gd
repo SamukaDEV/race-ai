@@ -55,11 +55,11 @@ var _line_edit_name: LineEdit
 var _toast_panel: PanelContainer
 var _toast_label: Label
 var _toast_timer: Timer
-var _load_modal: PanelContainer
+var _load_modal: Control
 var _track_list_container: VBoxContainer
 
 # Nós de interface do modal de configurações
-var _settings_modal: PanelContainer
+var _settings_modal: Control
 var _cfg_lbl_spots: Label
 var _cfg_spin_pop: SpinBox
 var _cfg_spin_idle: SpinBox
@@ -76,7 +76,7 @@ var _cfg_spin_steer: SpinBox
 var _grid_mesh: MeshInstance3D = null
 
 # Modal universal de confirmação
-var _confirm_modal: PanelContainer
+var _confirm_modal: Control
 var _confirm_title_lbl: Label
 var _confirm_msg_lbl: Label
 var _confirm_btn_action: Button
@@ -121,6 +121,28 @@ func _process(_delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	var vp := get_viewport()
+
+	# Tecla ESC fecha modais abertos com prioridade
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		if _confirm_modal and _confirm_modal.visible:
+			_confirm_modal.visible = false
+			_confirm_callback = Callable()
+			_is_mouse_over_ui = false
+			if vp:
+				vp.set_input_as_handled()
+			return
+		if _settings_modal and _settings_modal.visible:
+			_settings_modal.visible = false
+			_is_mouse_over_ui = false
+			if vp:
+				vp.set_input_as_handled()
+			return
+		if _load_modal and _load_modal.visible:
+			_load_modal.visible = false
+			_is_mouse_over_ui = false
+			if vp:
+				vp.set_input_as_handled()
+			return
 
 	# Solta o foco de campos de texto ao pressionar ESC ou ENTER
 	if event is InputEventKey and event.pressed and (event.keycode == KEY_ESCAPE or event.keycode == KEY_ENTER):
@@ -671,11 +693,51 @@ func _setup_editor_ui() -> void:
 	_setup_toast_ui(canvas)
 
 
+func _create_modal_shell(canvas: CanvasLayer, panel_min_width: float = 460.0, allow_backdrop_click_close: bool = true, on_close: Callable = Callable()) -> Dictionary:
+	var overlay := Control.new()
+	overlay.visible = false
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_PASS
+	canvas.add_child(overlay)
+
+	var dimmer := ColorRect.new()
+	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dimmer.color = Color(0.02, 0.03, 0.06, 0.75)
+	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.add_child(dimmer)
+	_connect_mouse_filter(dimmer)
+
+	if allow_backdrop_click_close:
+		dimmer.gui_input.connect(func(ev: InputEvent):
+			if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+				overlay.visible = false
+				_is_mouse_over_ui = false
+				if on_close.is_valid():
+					on_close.call()
+		)
+
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_PASS
+	overlay.add_child(center)
+
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(panel_min_width, 0)
+	center.add_child(panel)
+	_connect_mouse_filter(panel)
+
+	return {
+		"overlay": overlay,
+		"dimmer": dimmer,
+		"center": center,
+		"panel": panel
+	}
+
+
 func _setup_confirm_modal(canvas: CanvasLayer) -> void:
-	_confirm_modal = PanelContainer.new()
-	_confirm_modal.visible = false
-	_confirm_modal.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_confirm_modal.custom_minimum_size = Vector2(360, 170)
+	var shell := _create_modal_shell(canvas, 380.0, false)
+	_confirm_modal = shell["overlay"]
+	var panel: PanelContainer = shell["panel"]
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.07, 0.09, 0.14, 0.98)
@@ -685,18 +747,15 @@ func _setup_confirm_modal(canvas: CanvasLayer) -> void:
 	style.border_width_right = 1
 	style.border_width_bottom = 1
 	style.border_color = Color(1.0, 0.4, 0.4, 0.8)
-	style.content_margin_left = 18
-	style.content_margin_top = 14
-	style.content_margin_right = 18
-	style.content_margin_bottom = 14
-	_confirm_modal.add_theme_stylebox_override("panel", style)
-	canvas.add_child(_confirm_modal)
-
-	_connect_mouse_filter(_confirm_modal)
+	style.content_margin_left = 20
+	style.content_margin_top = 16
+	style.content_margin_right = 20
+	style.content_margin_bottom = 16
+	panel.add_theme_stylebox_override("panel", style)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
-	_confirm_modal.add_child(vbox)
+	vbox.add_theme_constant_override("separation", 12)
+	panel.add_child(vbox)
 
 	_confirm_title_lbl = Label.new()
 	_confirm_title_lbl.text = "⚠️ CONFIRMAÇÃO"
@@ -704,13 +763,17 @@ func _setup_confirm_modal(canvas: CanvasLayer) -> void:
 	_confirm_title_lbl.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 	vbox.add_child(_confirm_title_lbl)
 
+	vbox.add_child(HSeparator.new())
+
 	_confirm_msg_lbl = Label.new()
 	_confirm_msg_lbl.text = "Tem certeza de que deseja realizar esta ação?"
 	_confirm_msg_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_confirm_msg_lbl.add_theme_font_size_override("font_size", 12)
 	_confirm_msg_lbl.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
-	_confirm_msg_lbl.custom_minimum_size = Vector2(324, 46)
+	_confirm_msg_lbl.custom_minimum_size = Vector2(340, 40)
 	vbox.add_child(_confirm_msg_lbl)
+
+	vbox.add_child(HSeparator.new())
 
 	var btn_hbox := HBoxContainer.new()
 	btn_hbox.alignment = BoxContainer.ALIGNMENT_END
@@ -723,6 +786,7 @@ func _setup_confirm_modal(canvas: CanvasLayer) -> void:
 	_confirm_btn_cancel.pressed.connect(func():
 		_confirm_modal.visible = false
 		_confirm_callback = Callable()
+		_is_mouse_over_ui = false
 	)
 	btn_hbox.add_child(_confirm_btn_cancel)
 
@@ -736,6 +800,7 @@ func _setup_confirm_modal(canvas: CanvasLayer) -> void:
 func confirm_action() -> void:
 	if _confirm_modal:
 		_confirm_modal.visible = false
+	_is_mouse_over_ui = false
 	if _confirm_callback.is_valid():
 		var cb := _confirm_callback
 		_confirm_callback = Callable()
@@ -752,6 +817,7 @@ func _request_confirmation(title: String, message: String, action_label: String,
 	_confirm_btn_action.add_theme_color_override("font_color", action_color)
 	_confirm_callback = callback
 	_confirm_modal.visible = true
+	_is_mouse_over_ui = true
 
 
 func _delete_track_files(track_id: String) -> void:
@@ -776,10 +842,9 @@ func _delete_track_files(track_id: String) -> void:
 
 
 func _setup_load_modal(canvas: CanvasLayer) -> void:
-	_load_modal = PanelContainer.new()
-	_load_modal.visible = false
-	_load_modal.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_load_modal.custom_minimum_size = Vector2(380, 280)
+	var shell := _create_modal_shell(canvas, 420.0, true, func(): _is_mouse_over_ui = false)
+	_load_modal = shell["overlay"]
+	var panel: PanelContainer = shell["panel"]
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.1, 0.15, 0.98)
@@ -789,36 +854,61 @@ func _setup_load_modal(canvas: CanvasLayer) -> void:
 	style.border_width_right = 1
 	style.border_width_bottom = 1
 	style.border_color = Color(0.0, 0.8, 1.0, 0.8)
-	style.content_margin_left = 16
+	style.content_margin_left = 18
 	style.content_margin_top = 14
-	style.content_margin_right = 16
+	style.content_margin_right = 18
 	style.content_margin_bottom = 14
-	_load_modal.add_theme_stylebox_override("panel", style)
-	canvas.add_child(_load_modal)
-
-	_connect_mouse_filter(_load_modal)
+	panel.add_theme_stylebox_override("panel", style)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 10)
-	_load_modal.add_child(vbox)
+	panel.add_child(vbox)
+
+	var header_hbox := HBoxContainer.new()
+	header_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(header_hbox)
 
 	var title := Label.new()
 	title.text = "📂 PISTAS SALVAS"
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
-	vbox.add_child(title)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_child(title)
+
+	var btn_close_x := Button.new()
+	btn_close_x.text = "✕"
+	btn_close_x.flat = true
+	btn_close_x.tooltip_text = "Fechar"
+	btn_close_x.custom_minimum_size = Vector2(28, 28)
+	btn_close_x.add_theme_font_size_override("font_size", 13)
+	btn_close_x.pressed.connect(func():
+		_load_modal.visible = false
+		_is_mouse_over_ui = false
+	)
+	header_hbox.add_child(btn_close_x)
+
+	vbox.add_child(HSeparator.new())
 
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(348, 170)
+	scroll.custom_minimum_size = Vector2(380, 220)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	vbox.add_child(scroll)
 
 	_track_list_container = VBoxContainer.new()
+	_track_list_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_track_list_container.add_theme_constant_override("separation", 4)
 	scroll.add_child(_track_list_container)
 
+	vbox.add_child(HSeparator.new())
+
 	var btn_close := Button.new()
 	btn_close.text = "Fechar"
-	btn_close.pressed.connect(func(): _load_modal.visible = false)
+	btn_close.custom_minimum_size = Vector2(0, 32)
+	btn_close.pressed.connect(func():
+		_load_modal.visible = false
+		_is_mouse_over_ui = false
+	)
 	vbox.add_child(btn_close)
 
 
@@ -846,6 +936,7 @@ func _open_load_modal() -> void:
 			btn_load.pressed.connect(func():
 				load_track_from_file(path)
 				_load_modal.visible = false
+				_is_mouse_over_ui = false
 			)
 			row.add_child(btn_load)
 
@@ -871,13 +962,13 @@ func _open_load_modal() -> void:
 			row.add_child(btn_del)
 
 	_load_modal.visible = true
+	_is_mouse_over_ui = true
 
 
 func _setup_settings_modal(canvas: CanvasLayer) -> void:
-	_settings_modal = PanelContainer.new()
-	_settings_modal.visible = false
-	_settings_modal.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_settings_modal.custom_minimum_size = Vector2(460, 480)
+	var shell := _create_modal_shell(canvas, 500.0, true, func(): _is_mouse_over_ui = false)
+	_settings_modal = shell["overlay"]
+	var panel: PanelContainer = shell["panel"]
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.1, 0.15, 0.98)
@@ -891,20 +982,35 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	style.content_margin_top = 16
 	style.content_margin_right = 20
 	style.content_margin_bottom = 16
-	_settings_modal.add_theme_stylebox_override("panel", style)
-	canvas.add_child(_settings_modal)
-
-	_connect_mouse_filter(_settings_modal)
+	panel.add_theme_stylebox_override("panel", style)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
-	_settings_modal.add_child(vbox)
+	vbox.add_theme_constant_override("separation", 8)
+	panel.add_child(vbox)
+
+	# --- CABEÇALHO FIXO ---
+	var header_hbox := HBoxContainer.new()
+	header_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(header_hbox)
 
 	var title := Label.new()
 	title.text = "⚙️ CONFIGURAÇÕES DA PISTA & SIMULAÇÃO"
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
-	vbox.add_child(title)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_child(title)
+
+	var btn_close_x := Button.new()
+	btn_close_x.text = "✕"
+	btn_close_x.flat = true
+	btn_close_x.tooltip_text = "Fechar"
+	btn_close_x.custom_minimum_size = Vector2(28, 28)
+	btn_close_x.add_theme_font_size_override("font_size", 13)
+	btn_close_x.pressed.connect(func():
+		_settings_modal.visible = false
+		_is_mouse_over_ui = false
+	)
+	header_hbox.add_child(btn_close_x)
 
 	_cfg_lbl_spots = Label.new()
 	_cfg_lbl_spots.add_theme_font_size_override("font_size", 11)
@@ -913,11 +1019,19 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 
 	vbox.add_child(HSeparator.new())
 
+	# --- CORPO ROLÁVEL (SCROLLCONTAINER) ---
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(460, 270)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+
 	var grid := GridContainer.new()
 	grid.columns = 2
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 14)
 	grid.add_theme_constant_override("v_separation", 8)
-	vbox.add_child(grid)
+	scroll.add_child(grid)
 
 	# 1. População de Carros
 	var lbl_pop := Label.new()
@@ -1067,7 +1181,7 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 
 	vbox.add_child(HSeparator.new())
 
-	# Botões de Ação
+	# --- RODAPÉ FIXO (SEMPRE VISÍVEL) ---
 	var actions_hbox := HBoxContainer.new()
 	actions_hbox.add_theme_constant_override("separation", 10)
 	vbox.add_child(actions_hbox)
@@ -1083,9 +1197,16 @@ func _setup_settings_modal(canvas: CanvasLayer) -> void:
 	btn_defaults.pressed.connect(_reset_settings_to_defaults)
 	actions_hbox.add_child(btn_defaults)
 
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions_hbox.add_child(spacer)
+
 	var btn_close := Button.new()
 	btn_close.text = "Fechar"
-	btn_close.pressed.connect(func(): _settings_modal.visible = false)
+	btn_close.pressed.connect(func():
+		_settings_modal.visible = false
+		_is_mouse_over_ui = false
+	)
 	actions_hbox.add_child(btn_close)
 
 
@@ -1113,6 +1234,7 @@ func _open_settings_modal() -> void:
 	_cfg_spin_steer.value = current_track_config.get("steering_speed", 2.5)
 
 	_settings_modal.visible = true
+	_is_mouse_over_ui = true
 
 
 func _apply_settings_from_modal() -> void:
@@ -1128,6 +1250,7 @@ func _apply_settings_from_modal() -> void:
 	current_track_config["steering_speed"] = float(_cfg_spin_steer.value)
 
 	_settings_modal.visible = false
+	_is_mouse_over_ui = false
 	_show_toast("✅ Configurações da pista salvas!")
 
 
